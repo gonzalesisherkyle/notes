@@ -2,7 +2,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { LogOut, Plus, RefreshCw, Search } from 'lucide-vue-next';
+import { LogOut, Menu, Plus, RefreshCw, Search, X } from 'lucide-vue-next';
 import InstallPrompt from './components/InstallPrompt.vue';
 import NoteCard from './components/NoteCard.vue';
 import OfflineBanner from './components/OfflineBanner.vue';
@@ -17,6 +17,7 @@ const router = useRouter();
 
 const search = ref('');
 const notesBooted = ref(false);
+const mobileSidebarOpen = ref(false);
 
 const showShell = computed(() => authStore.isLoggedIn && !route.meta.public);
 const activeNoteId = computed(() => route.params.id);
@@ -42,11 +43,18 @@ async function bootNotes() {
 }
 
 function createNote() {
+  mobileSidebarOpen.value = false;
   router.push('/notes/new');
 }
 
 function openNote(id) {
+  mobileSidebarOpen.value = false;
   router.push(`/notes/${id}`);
+}
+
+function goHome() {
+  mobileSidebarOpen.value = false;
+  router.push('/');
 }
 
 async function deleteNote(id) {
@@ -85,6 +93,13 @@ watch(
     }
   },
 );
+
+watch(
+  () => route.fullPath,
+  () => {
+    mobileSidebarOpen.value = false;
+  },
+);
 </script>
 
 <template>
@@ -93,20 +108,60 @@ watch(
 
     <RouterView v-if="route.meta.public" />
 
-    <div v-else-if="showShell" class="flex min-h-screen flex-col bg-ink-deep md:flex-row">
-      <aside class="flex h-[320px] w-full shrink-0 flex-col border-b border-quiet-outline bg-ink-low md:h-screen md:w-sidebar md:border-b-0 md:border-r">
+    <div v-else-if="showShell" class="min-h-screen bg-ink-deep md:flex">
+      <header class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-quiet-outline bg-ink-low px-3 md:hidden">
+        <button
+          class="grid h-10 w-10 place-items-center rounded-app border border-quiet-outline bg-ink-surface text-quiet-muted transition hover:border-quiet-primary hover:text-quiet-text"
+          title="Open notes"
+          type="button"
+          @click="mobileSidebarOpen = true"
+        >
+          <Menu class="h-5 w-5" aria-hidden="true" />
+          <span class="sr-only">Open notes</span>
+        </button>
+
+        <button class="min-w-0 px-2 text-left" type="button" @click="goHome">
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-quiet-primary">Quiet Scribe</p>
+        </button>
+
+        <SyncStatus />
+      </header>
+
+      <button
+        v-if="mobileSidebarOpen"
+        class="fixed inset-0 z-40 bg-black/60 md:hidden"
+        title="Close notes"
+        type="button"
+        @click="mobileSidebarOpen = false"
+      >
+        <span class="sr-only">Close notes</span>
+      </button>
+
+      <aside
+        class="fixed inset-y-0 left-0 z-50 flex w-[min(320px,calc(100vw-48px))] shrink-0 flex-col border-r border-quiet-outline bg-ink-low transition-transform duration-200 md:static md:z-auto md:h-screen md:w-sidebar md:translate-x-0"
+        :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+      >
         <header class="border-b border-quiet-outline p-4">
           <div class="mb-4 flex items-center justify-between gap-3">
             <button
               class="min-w-0 text-left"
               type="button"
-              @click="router.push('/')"
+              @click="goHome"
             >
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-quiet-primary">Quiet Scribe</p>
               <h1 class="truncate text-sm font-semibold text-quiet-text">Notes</h1>
             </button>
 
             <div class="flex items-center gap-1">
+              <button
+                class="grid h-9 w-9 place-items-center rounded-app border border-quiet-outline bg-ink-surface text-quiet-muted transition hover:border-quiet-primary hover:text-quiet-text md:hidden"
+                title="Close notes"
+                type="button"
+                @click="mobileSidebarOpen = false"
+              >
+                <X class="h-4 w-4" aria-hidden="true" />
+                <span class="sr-only">Close notes</span>
+              </button>
               <button
                 class="grid h-9 w-9 place-items-center rounded-app border border-quiet-outline bg-ink-surface text-quiet-muted transition hover:border-quiet-primary hover:text-quiet-text"
                 title="New note"
