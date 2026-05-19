@@ -1,13 +1,18 @@
 // server/src/index.js
-import 'dotenv/config';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import authMiddleware from './middleware/auth.js';
 import authRouter from './routes/auth.js';
 import notesRouter from './routes/notes.js';
 import syncRouter from './routes/sync.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: resolve(__dirname, '../.env') });
 
 const app = express();
 const port = process.env.PORT || 3000;
