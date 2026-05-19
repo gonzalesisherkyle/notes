@@ -1,0 +1,6 @@
+name = "notes-app"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-05-19"
+
+[vars]
+VITE_API_URL = "https://notes-api.isher.dev/api"
