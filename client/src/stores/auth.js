@@ -5,6 +5,41 @@ import api, { clearAccessToken, setAccessToken } from '../services/api';
 
 let logoutListenerRegistered = false;
 let initPromise = null;
+const OFFLINE_SESSION_KEY = 'notes-offline-session';
+
+function readOfflineSession() {
+  if (typeof localStorage === 'undefined') {
+    return null;
+  }
+
+  try {
+    return JSON.parse(localStorage.getItem(OFFLINE_SESSION_KEY));
+  } catch {
+    return null;
+  }
+}
+
+function rememberOfflineSession(user) {
+  if (typeof localStorage === 'undefined') {
+    return;
+  }
+
+  localStorage.setItem(
+    OFFLINE_SESSION_KEY,
+    JSON.stringify({
+      user: user ?? null,
+      authenticatedAt: new Date().toISOString(),
+    }),
+  );
+}
+
+function forgetOfflineSession() {
+  if (typeof localStorage === 'undefined') {
+    return;
+  }
+
+  localStorage.removeItem(OFFLINE_SESSION_KEY);
+}
 
 async function redirectToLogin() {
   const { default: router } = await import('../router');
@@ -25,11 +60,27 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref(null);
   const initialized = ref(false);
   const initializing = ref(false);
+  const offlineOnly = ref(false);
 
   function clearSession() {
     clearAccessToken();
     isLoggedIn.value = false;
     user.value = null;
+    offlineOnly.value = false;
+  }
+
+  function unlockOfflineSession() {
+    const offlineSession = readOfflineSession();
+
+    if (!offlineSession) {
+      clearSession();
+      return;
+    }
+
+    clearAccessToken();
+    isLoggedIn.value = true;
+    user.value = offlineSession.user ?? null;
+    offlineOnly.value = true;
   }
 
   // Silently restores a session by rotating the refresh cookie into a new access token.
@@ -46,15 +97,21 @@ export const useAuthStore = defineStore('auth', () => {
         .then((response) => {
           const token = response.data?.accessToken;
 
-          if (token) {
+          if (response.data?.offline) {
+            unlockOfflineSession();
+          } else if (token) {
             setAccessToken(token);
             isLoggedIn.value = true;
             user.value = response.data?.user ?? null;
+            offlineOnly.value = false;
+            rememberOfflineSession(response.data?.user ?? null);
           } else {
+            forgetOfflineSession();
             clearSession();
           }
         })
         .catch(() => {
+          forgetOfflineSession();
           clearSession();
         })
         .finally(() => {
@@ -84,6 +141,8 @@ export const useAuthStore = defineStore('auth', () => {
     setAccessToken(response.data.accessToken);
     isLoggedIn.value = true;
     user.value = response.data?.user ?? null;
+    offlineOnly.value = false;
+    rememberOfflineSession(response.data?.user ?? null);
     initialized.value = true;
     await redirectAfterAuth();
   }
@@ -99,6 +158,8 @@ export const useAuthStore = defineStore('auth', () => {
     setAccessToken(response.data.accessToken);
     isLoggedIn.value = true;
     user.value = response.data?.user ?? null;
+    offlineOnly.value = false;
+    rememberOfflineSession(response.data?.user ?? null);
     initialized.value = true;
     await redirectAfterAuth();
   }
@@ -109,6 +170,7 @@ export const useAuthStore = defineStore('auth', () => {
       await api.post('/auth/logout');
     } finally {
       clearSession();
+      forgetOfflineSession();
       initialized.value = true;
       await redirectToLogin();
     }
@@ -117,6 +179,7 @@ export const useAuthStore = defineStore('auth', () => {
   // Clears local auth state after a failed silent refresh or detected token issue.
   async function forceLogout() {
     clearSession();
+    forgetOfflineSession();
     initialized.value = true;
     await redirectToLogin();
   }
@@ -131,6 +194,7 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     initialized,
     initializing,
+    offlineOnly,
     init,
     restoreSession,
     login,

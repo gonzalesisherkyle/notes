@@ -57,7 +57,11 @@ async function deleteNote(id) {
   }
 }
 
-function handleOnline() {
+async function handleOnline() {
+  if (authStore.offlineOnly) {
+    await authStore.restoreSession();
+  }
+
   void notesStore.syncNow();
 }
 
