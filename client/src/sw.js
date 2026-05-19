@@ -4,11 +4,15 @@ import { registerRoute, NavigationRoute } from 'workbox-routing';
 import { CacheFirst, NetworkFirst } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
+import { clientsClaim } from 'workbox-core';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const DB_NAME = 'notes-db';
 const DB_VERSION = 1;
 const STORE_NAME = 'notes';
+
+self.skipWaiting();
+clientsClaim();
 
 precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
