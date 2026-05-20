@@ -19,6 +19,8 @@ import {
   List,
   ListOrdered,
   ListTodo,
+  Lock,
+  LockOpen,
   Maximize2,
   Minimize2,
   Minus,
@@ -271,7 +273,8 @@ const activeFormats = ref({
   h2: false,
   h3: false,
   blockquote: false,
-  pre: false
+  pre: false,
+  secret: false
 });
 
 // Update active states of format buttons based on current selection
@@ -290,6 +293,15 @@ function updateToolbarStates() {
   activeFormats.value.h3 = blockType === 'h3';
   activeFormats.value.blockquote = blockType === 'blockquote';
   activeFormats.value.pre = blockType === 'pre';
+
+  const selection = window.getSelection();
+  if (selection && selection.rangeCount > 0) {
+    let node = selection.getRangeAt(0).commonAncestorContainer;
+    if (node.nodeType === 3) node = node.parentNode;
+    activeFormats.value.secret = !!(node && node.closest && node.closest('.secret-text'));
+  } else {
+    activeFormats.value.secret = false;
+  }
 }
 
 function execCommand(command, value = null) {
@@ -363,6 +375,7 @@ watch(
     const idChanged = note?.id !== currentNoteId.value;
     
     if (idChanged || !hydrated.value) {
+      allSecretsRevealed.value = false;
       currentNoteId.value = note?.id ?? null;
       hydrated.value = false;
       
@@ -443,7 +456,8 @@ watch(
 // Update the internal html body state
 function handleEditorInput() {
   if (!editorRef.value) return;
-  body.value = editorRef.value.innerHTML;
+  // Strip secret-revealed class so it is not saved to DB
+  body.value = editorRef.value.innerHTML.replace(/\bsecret-revealed\b/g, '').trim();
   updateToolbarStates();
 }
 
@@ -477,6 +491,74 @@ function insertChecklist() {
   handleEditorInput();
 }
 
+const allSecretsRevealed = ref(false);
+
+function toggleSecretText() {
+  if (!editorRef.value) return;
+  editorRef.value.focus();
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) return;
+
+  const range = selection.getRangeAt(0);
+  
+  // If nothing is selected, check if cursor is inside a secret text
+  if (range.collapsed) {
+    let node = range.commonAncestorContainer;
+    if (node.nodeType === 3) node = node.parentNode;
+    const existingSecret = node && node.closest ? node.closest('.secret-text') : null;
+    if (existingSecret) {
+      const parent = existingSecret.parentNode;
+      while (existingSecret.firstChild) {
+        parent.insertBefore(existingSecret.firstChild, existingSecret);
+      }
+      parent.removeChild(existingSecret);
+      handleEditorInput();
+    }
+    return;
+  }
+
+  let container = range.commonAncestorContainer;
+  if (container.nodeType === 3) container = container.parentNode;
+  const existingSecretSpan = container && container.closest ? container.closest('.secret-text') : null;
+
+  if (existingSecretSpan) {
+    const parent = existingSecretSpan.parentNode;
+    while (existingSecretSpan.firstChild) {
+      parent.insertBefore(existingSecretSpan.firstChild, existingSecretSpan);
+    }
+    parent.removeChild(existingSecretSpan);
+    handleEditorInput();
+  } else {
+    const span = document.createElement('span');
+    span.className = 'secret-text';
+    span.setAttribute('data-secret', 'true');
+    try {
+      span.appendChild(range.extractContents());
+      range.insertNode(span);
+      selection.removeAllRanges();
+      const newRange = document.createRange();
+      newRange.selectNode(span);
+      selection.addRange(newRange);
+      handleEditorInput();
+    } catch (e) {
+      console.error('Failed to wrap selection in secret-text', e);
+    }
+  }
+}
+
+function toggleAllSecrets() {
+  allSecretsRevealed.value = !allSecretsRevealed.value;
+  if (!editorRef.value) return;
+  const secrets = editorRef.value.querySelectorAll('.secret-text');
+  secrets.forEach((span) => {
+    if (allSecretsRevealed.value) {
+      span.classList.add('secret-revealed');
+    } else {
+      span.classList.remove('secret-revealed');
+    }
+  });
+}
+
 function handleEditorClick(e) {
   closeAllDropdowns();
   
@@ -487,6 +569,14 @@ function handleEditorClick(e) {
       e.target.removeAttribute('checked');
     }
     handleEditorInput();
+  }
+
+  // Handle clicking secret text to reveal/hide it individually
+  if (e.target && e.target.closest) {
+    const secretSpan = e.target.closest('.secret-text');
+    if (secretSpan) {
+      secretSpan.classList.toggle('secret-revealed');
+    }
   }
 }
 
@@ -970,6 +1060,28 @@ const inlineStyles = computed(() => {
           @click="execCommand('strikeThrough')"
         >
           <Strikethrough class="h-4 w-4" />
+        </button>
+
+        <!-- Secret Mark / Toggle Actions -->
+        <button
+          class="h-8 w-8 grid place-items-center rounded hover:bg-ink-surface transition hover:text-quiet-text"
+          :style="activeFormats.secret ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
+          title="Mark selection as Secret (Lock)"
+          type="button"
+          @click="toggleSecretText"
+        >
+          <Lock class="h-4 w-4" />
+        </button>
+
+        <button
+          class="h-8 w-8 grid place-items-center rounded hover:bg-ink-surface transition hover:text-quiet-text"
+          :style="allSecretsRevealed ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
+          title="Toggle visibility of all secrets"
+          type="button"
+          @click="toggleAllSecrets"
+        >
+          <LockOpen v-if="allSecretsRevealed" class="h-4 w-4" />
+          <Lock v-else class="h-4 w-4" />
         </button>
 
         <div class="h-4 w-[1px] bg-quiet-outline/30 mx-1" />

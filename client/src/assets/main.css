@@ -59,3 +59,43 @@
   scrollbar-width: thin;
   scrollbar-color: #2b2e2c #0d0f0e;
 }
+
+/* Secret text formatting styles */
+.secret-text {
+  background-color: #2b322e;
+  color: transparent !important;
+  border-radius: 4px;
+  padding: 0 6px;
+  cursor: pointer;
+  user-select: none;
+  border: 1px dashed rgba(74, 222, 128, 0.35);
+  display: inline-block;
+  position: relative;
+  transition: all 0.2s ease-in-out;
+  margin: 0 2px;
+}
+
+.secret-text::before {
+  content: '🔒 ';
+  font-size: 11px;
+  color: #4ade80;
+  vertical-align: middle;
+}
+
+.secret-text:hover {
+  border-color: rgba(74, 222, 128, 0.6);
+  background-color: #353d39;
+}
+
+.secret-text.secret-revealed {
+  background-color: rgba(74, 222, 128, 0.12);
+  color: inherit !important;
+  user-select: text;
+  border: 1px solid rgba(74, 222, 128, 0.5);
+}
+
+.secret-text.secret-revealed::before {
+  content: '🔓 ';
+  color: #4ade80;
+}
+
