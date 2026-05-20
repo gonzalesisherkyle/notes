@@ -9,6 +9,8 @@ import {
   Check,
   ChevronDown,
   Code,
+  Eye,
+  EyeOff,
   FileText,
   Headphones,
   Heading1,
@@ -535,10 +537,21 @@ function toggleSecretText() {
     try {
       span.appendChild(range.extractContents());
       range.insertNode(span);
+      
+      // Create a zero-width space text node after the span to reset selection / text color context
+      const zws = document.createTextNode('\u200B');
+      if (span.nextSibling) {
+        span.parentNode.insertBefore(zws, span.nextSibling);
+      } else {
+        span.parentNode.appendChild(zws);
+      }
+
       selection.removeAllRanges();
       const newRange = document.createRange();
-      newRange.selectNode(span);
+      newRange.setStart(zws, 1);
+      newRange.collapse(true);
       selection.addRange(newRange);
+
       handleEditorInput();
     } catch (e) {
       console.error('Failed to wrap selection in secret-text', e);
@@ -1080,8 +1093,8 @@ const inlineStyles = computed(() => {
           type="button"
           @click="toggleAllSecrets"
         >
-          <LockOpen v-if="allSecretsRevealed" class="h-4 w-4" />
-          <Lock v-else class="h-4 w-4" />
+          <Eye v-if="allSecretsRevealed" class="h-4 w-4" />
+          <EyeOff v-else class="h-4 w-4" />
         </button>
 
         <div class="h-4 w-[1px] bg-quiet-outline/30 mx-1" />
@@ -1486,30 +1499,42 @@ const inlineStyles = computed(() => {
 }
 
 .editor-content h1 {
-  font-size: 1.85em;
+  font-size: 2.2em;
   font-weight: 700;
-  margin-top: 1.5rem;
+  margin-top: 1.75rem;
   margin-bottom: 0.75rem;
   line-height: 1.25;
   letter-spacing: -0.025em;
   color: #e2e3e1;
 }
+.editor-content h1 * {
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
 
 .editor-content h2 {
-  font-size: 1.45em;
+  font-size: 1.65em;
   font-weight: 600;
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
   margin-bottom: 0.5rem;
   line-height: 1.3;
   color: #e2e3e1;
 }
+.editor-content h2 * {
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
 
 .editor-content h3 {
-  font-size: 1.2em;
+  font-size: 1.3em;
   font-weight: 600;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
   margin-bottom: 0.5rem;
   color: #e2e3e1;
+}
+.editor-content h3 * {
+  font-size: inherit !important;
+  font-weight: inherit !important;
 }
 
 .editor-content p {
