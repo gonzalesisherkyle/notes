@@ -119,9 +119,9 @@ async function renderQrCode() {
     await QRCode.toCanvas(canvasRef.value, textToEncode, {
       width: 256,
       margin: 2,
-      errorCorrectionLevel: 'M',
+      errorCorrectionLevel: 'L',
       color: {
-        dark: '#1e293b', // Deep slate for high contrast scanner readability
+        dark: '#000000', // Absolute black for maximum contrast
         light: '#ffffff', // Clean white background
       },
     });
@@ -382,7 +382,7 @@ watch(activeTab, (newTab) => {
 
           <!-- QR Code Canvas Display -->
           <div class="relative flex flex-col items-center justify-center p-4 bg-white rounded-xl shadow-lg border border-quiet-outline/30 mt-2">
-            <canvas ref="canvasRef" class="w-48 h-48 block"></canvas>
+            <canvas ref="canvasRef" class="w-64 h-64 block"></canvas>
             
             <!-- Loading Indicator -->
             <div v-if="generating" class="absolute inset-0 bg-white/95 rounded-xl flex flex-col items-center justify-center gap-2">
