@@ -4,6 +4,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { Check, Copy, Download, Eye, EyeOff, Globe, Lock, QrCode, Share2, X } from 'lucide-vue-next';
 import QRCode from 'qrcode';
 import { encryptNote } from '../utils/crypto';
+import { compressToBase64Url } from '../utils/compress';
 
 const props = defineProps({
   note: {
@@ -66,19 +67,21 @@ watch(
   { deep: true }
 );
 
+// Separate QR-specific URL that uses compression
+const qrShareUrl = ref('');
+
 async function generateShareData() {
   generating.value = true;
   qrError.value = '';
   
   try {
+    // --- Uncompressed share link (for copy/paste, works in browsers) ---
     let payloadStr = '';
     
     if (encryptToggle.value && password.value) {
-      // Encrypted Mode
       const encrypted = await encryptNote(notePayload.value, password.value);
       payloadStr = `encrypted=1&data=${encrypted}`;
     } else {
-      // Plain Mode
       const json = JSON.stringify(notePayload.value);
       const encoded = btoa(unescape(encodeURIComponent(json)))
         .replace(/\+/g, '-')
@@ -87,8 +90,17 @@ async function generateShareData() {
       payloadStr = `data=${encoded}`;
     }
     
-    // Set actual share link
     shareUrl.value = `${importBaseUrl.value}#${payloadStr}`;
+    
+    // --- Compressed QR payload (much smaller, scannable) ---
+    if (encryptToggle.value && password.value) {
+      // Encrypted data is already compact binary, just use it directly
+      qrShareUrl.value = shareUrl.value;
+    } else {
+      const json = JSON.stringify(notePayload.value);
+      const compressed = compressToBase64Url(json);
+      qrShareUrl.value = `${importBaseUrl.value}#z=1&data=${compressed}`;
+    }
     
     if (activeTab.value === 'qrcode') {
       await renderQrCode();
@@ -106,23 +118,25 @@ async function renderQrCode() {
   if (!canvasRef.value) return;
   
   const textToEncode = qrMode.value === 'preview' 
-    ? shareUrl.value 
+    ? qrShareUrl.value
     : getPlainBody(props.note.body) || 'Empty note content';
     
-  // Check if size is within limits (~2000 chars for good scanning)
+  // Compressed payloads are much smaller; 2953 is the alphanumeric max for QR version 40
   if (textToEncode.length > 2500) {
-    qrError.value = 'Note is too long. Switch to "Link & Preview" mode or shorten the note.';
+    qrError.value = qrMode.value === 'preview'
+      ? 'Note is too large for QR even after compression. Try a shorter note or use the Share Link tab to copy the URL.'
+      : 'Note text is too long for a QR code. Try shortening the note.';
     return;
   }
   
   try {
     await QRCode.toCanvas(canvasRef.value, textToEncode, {
-      width: 256,
-      margin: 2,
-      errorCorrectionLevel: 'L',
+      width: 320,
+      margin: 3,
+      errorCorrectionLevel: 'M',
       color: {
-        dark: '#000000', // Absolute black for maximum contrast
-        light: '#ffffff', // Clean white background
+        dark: '#000000',
+        light: '#ffffff',
       },
     });
   } catch (err) {
@@ -381,8 +395,8 @@ watch(activeTab, (newTab) => {
           </div>
 
           <!-- QR Code Canvas Display -->
-          <div class="relative flex flex-col items-center justify-center p-4 bg-white rounded-xl shadow-lg border border-quiet-outline/30 mt-2">
-            <canvas ref="canvasRef" class="w-64 h-64 block"></canvas>
+          <div class="relative flex flex-col items-center justify-center p-5 bg-white rounded-xl shadow-lg border border-quiet-outline/30 mt-2">
+            <canvas ref="canvasRef" style="width: 320px; height: 320px; display: block; image-rendering: pixelated;"></canvas>
             
             <!-- Loading Indicator -->
             <div v-if="generating" class="absolute inset-0 bg-white/95 rounded-xl flex flex-col items-center justify-center gap-2">

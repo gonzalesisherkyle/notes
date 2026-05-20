@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import { ArrowLeft, Check, Download, Eye, EyeOff, Lock, LockOpen, QrCode, Tag, AlertTriangle } from 'lucide-vue-next';
 import { useNotesStore } from '../stores/notes';
 import { decryptNote } from '../utils/crypto';
+import { decompressFromBase64Url } from '../utils/compress';
 
 const router = useRouter();
 const notesStore = useNotesStore();
@@ -92,6 +93,7 @@ onMounted(() => {
   
   const params = new URLSearchParams(hash);
   const encryptedParam = params.get('encrypted');
+  const compressedParam = params.get('z');
   const dataParam = params.get('data');
   
   if (!dataParam) {
@@ -107,7 +109,15 @@ onMounted(() => {
     step.value = 'decrypt';
   } else {
     try {
-      const parsed = decodePlainData(dataParam);
+      let parsed;
+      if (compressedParam === '1') {
+        // Compressed payload (from QR code)
+        const json = decompressFromBase64Url(dataParam);
+        parsed = JSON.parse(json);
+      } else {
+        // Uncompressed payload (from copy-paste link)
+        parsed = decodePlainData(dataParam);
+      }
       note.value = {
         title: parsed.title || 'Untitled Note',
         body: parsed.body || '',
