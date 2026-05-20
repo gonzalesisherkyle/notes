@@ -7,15 +7,25 @@ let dbPromise = null;
 
 function normalizeNote(note) {
   const now = new Date().toISOString();
+  
+  // Strip Vue reactive proxies by deep copying to a plain JS object
+  const cleanNote = note ? JSON.parse(JSON.stringify(note)) : {};
 
   return {
-    id: note.id,
-    title: note.title ?? '',
-    body: note.body ?? '',
-    deleted: Boolean(note.deleted),
-    synced: note.synced ?? false,
-    createdAt: note.createdAt ?? now,
-    updatedAt: note.updatedAt ?? now,
+    id: cleanNote.id,
+    title: cleanNote.title ?? '',
+    body: cleanNote.body ?? '',
+    deleted: Boolean(cleanNote.deleted),
+    synced: cleanNote.synced ?? false,
+    color: cleanNote.color ?? 'default',
+    fontFamily: cleanNote.fontFamily ?? 'serif',
+    fontSize: cleanNote.fontSize ?? 'medium',
+    lineHeight: cleanNote.lineHeight ?? 'relaxed',
+    pinned: cleanNote.pinned ?? false,
+    tags: Array.isArray(cleanNote.tags) ? cleanNote.tags : [],
+    versions: Array.isArray(cleanNote.versions) ? cleanNote.versions : [],
+    createdAt: cleanNote.createdAt ?? now,
+    updatedAt: cleanNote.updatedAt ?? now,
   };
 }
 

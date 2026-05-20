@@ -15,6 +15,30 @@ const noteSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    color: {
+      type: String,
+      default: 'default',
+    },
+    fontFamily: {
+      type: String,
+      default: 'serif',
+    },
+    fontSize: {
+      type: String,
+      default: 'medium',
+    },
+    lineHeight: {
+      type: String,
+      default: 'relaxed',
+    },
+    pinned: {
+      type: Boolean,
+      default: false,
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -24,6 +48,16 @@ const noteSchema = new mongoose.Schema(
     deleted: {
       type: Boolean,
       default: false,
+    },
+    versions: {
+      type: [
+        {
+          title: String,
+          body: String,
+          updatedAt: String,
+        }
+      ],
+      default: [],
     },
   },
   { timestamps: true },

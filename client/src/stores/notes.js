@@ -12,7 +12,11 @@ import {
 } from '../services/db';
 
 function sortNotes(notes) {
-  return [...notes].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  return [...notes].sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return new Date(b.updatedAt) - new Date(a.updatedAt);
+  });
 }
 
 function visibleNotes(notes) {
@@ -32,6 +36,13 @@ function createDraft(partial = {}) {
     body: partial.body ?? '',
     deleted: partial.deleted ?? false,
     synced: partial.synced ?? false,
+    color: partial.color ?? 'default',
+    fontFamily: partial.fontFamily ?? 'serif',
+    fontSize: partial.fontSize ?? 'medium',
+    lineHeight: partial.lineHeight ?? 'relaxed',
+    pinned: partial.pinned ?? false,
+    tags: Array.isArray(partial.tags) ? partial.tags : [],
+    versions: Array.isArray(partial.versions) ? partial.versions : [],
     createdAt: partial.createdAt ?? now,
     updatedAt: partial.updatedAt ?? now,
   };
@@ -77,6 +88,12 @@ export const useNotesStore = defineStore('notes', () => {
         body: serverNote.body ?? '',
         deleted: Boolean(serverNote.deleted),
         synced: true,
+        color: serverNote.color ?? 'default',
+        fontFamily: serverNote.fontFamily ?? 'serif',
+        fontSize: serverNote.fontSize ?? 'medium',
+        lineHeight: serverNote.lineHeight ?? 'relaxed',
+        pinned: serverNote.pinned ?? false,
+        tags: Array.isArray(serverNote.tags) ? serverNote.tags : [],
         createdAt: serverNote.createdAt,
         updatedAt: serverNote.updatedAt,
       };
@@ -125,9 +142,40 @@ export const useNotesStore = defineStore('notes', () => {
   // Creates or updates a note optimistically in IndexedDB before trying server sync.
   async function saveNote(partial) {
     const existing = partial.id ? await getNoteById(partial.id) : null;
+    let versions = existing && Array.isArray(existing.versions) ? [...existing.versions] : [];
+
+    // Snapshottable content: only append snapshot if content has actually changed and is not blank
+    if (existing && (existing.title !== partial.title || existing.body !== partial.body)) {
+      const now = new Date().toISOString();
+      const lastVersion = versions[versions.length - 1];
+
+      // Throttling: save snapshots every 2 minutes OR if user forces it (e.g. clicking 'Save now' icon)
+      const force = Boolean(partial.forceVersion);
+      const timeThreshold = 2 * 60 * 1000;
+      const timeDiff = lastVersion ? (new Date(now) - new Date(lastVersion.updatedAt)) : Infinity;
+
+      if (force || timeDiff > timeThreshold) {
+        // We save the PRIOR text state as the history snapshot!
+        versions.push({
+          title: existing.title || 'Untitled note',
+          body: existing.body || '',
+          updatedAt: existing.updatedAt || now,
+        });
+
+        if (versions.length > 15) {
+          versions.shift();
+        }
+      }
+    }
+
+    // We delete forceVersion flag from partial before mixing
+    const cleanPartial = { ...partial };
+    delete cleanPartial.forceVersion;
+
     const note = createDraft({
       ...existing,
-      ...partial,
+      ...cleanPartial,
+      versions,
       synced: false,
       deleted: false,
       updatedAt: new Date().toISOString(),

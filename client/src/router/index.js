@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
 import EditorView from '../views/EditorView.vue';
 import LoginView from '../views/LoginView.vue';
+import ImportView from '../views/ImportView.vue';
 import { useAuthStore } from '../stores/auth';
 
 const routes = [
@@ -23,6 +24,10 @@ const routes = [
   {
     path: '/notes/:id',
     component: EditorView,
+  },
+  {
+    path: '/import',
+    component: ImportView,
   },
 ];
 

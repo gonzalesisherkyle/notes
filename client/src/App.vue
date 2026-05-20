@@ -18,19 +18,60 @@ const router = useRouter();
 const search = ref('');
 const notesBooted = ref(false);
 const mobileSidebarOpen = ref(false);
+const selectedTag = ref(null);
 
 const showShell = computed(() => authStore.isLoggedIn && !route.meta.public);
 const activeNoteId = computed(() => route.params.id);
-const filteredNotes = computed(() => {
-  const query = search.value.trim().toLowerCase();
 
-  if (!query) {
-    return notesStore.notes;
+// Computes unique list of tags from notes with counts
+const allTags = computed(() => {
+  const counts = {};
+  notesStore.notes.forEach((note) => {
+    if (Array.isArray(note.tags)) {
+      note.tags.forEach((tag) => {
+        counts[tag] = (counts[tag] || 0) + 1;
+      });
+    }
+  });
+  return Object.entries(counts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+});
+
+// Normalizes HTML characters and spacing for accurate, reliable query matching
+function normalizeText(htmlOrText) {
+  if (!htmlOrText) return '';
+  let text = htmlOrText.replace(/<[^>]*>/g, ' ');
+  text = text
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'");
+  text = text.replace(/\u00a0/g, ' ');
+  return text.replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+const filteredNotes = computed(() => {
+  let list = notesStore.notes;
+
+  if (selectedTag.value) {
+    list = list.filter((note) => Array.isArray(note.tags) && note.tags.includes(selectedTag.value));
   }
 
-  return notesStore.notes.filter((note) =>
-    `${note.title} ${note.body}`.toLowerCase().includes(query),
-  );
+  const query = normalizeText(search.value);
+  if (!query) {
+    return list;
+  }
+
+  return list.filter((note) => {
+    const titleNorm = normalizeText(note.title);
+    const bodyNorm = normalizeText(note.body);
+    const tagsNorm = Array.isArray(note.tags) ? note.tags.join(' ').toLowerCase() : '';
+    const indexContent = `${titleNorm} ${bodyNorm} ${tagsNorm}`;
+    return indexContent.includes(query);
+  });
 });
 
 async function bootNotes() {
@@ -44,6 +85,7 @@ async function bootNotes() {
 
 function createNote() {
   mobileSidebarOpen.value = false;
+  selectedTag.value = null;
   router.push('/notes/new');
 }
 
@@ -54,6 +96,7 @@ function openNote(id) {
 
 function goHome() {
   mobileSidebarOpen.value = false;
+  selectedTag.value = null;
   router.push('/');
 }
 
@@ -108,7 +151,7 @@ watch(
 
     <RouterView v-if="route.meta.public" />
 
-    <div v-else-if="showShell" class="min-h-screen bg-ink-deep md:flex">
+    <div v-else-if="showShell" class="h-screen overflow-hidden bg-ink-deep flex flex-col md:flex-row">
       <header class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-quiet-outline bg-ink-low px-3 md:hidden">
         <button
           class="grid h-10 w-10 place-items-center rounded-app border border-quiet-outline bg-ink-surface text-quiet-muted transition hover:border-quiet-primary hover:text-quiet-text"
@@ -219,13 +262,43 @@ watch(
           </p>
         </div>
 
+        <!-- Tags Filter Section in Sidebar -->
+        <div v-if="allTags.length" class="border-t border-quiet-outline/25 px-4 py-3 max-h-[160px] overflow-y-auto select-none bg-ink-deep/20">
+          <div class="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-quiet-muted">
+            <span class="text-[10px] opacity-75">Filter Tags</span>
+            <button
+              v-if="selectedTag"
+              class="text-[9px] text-quiet-primary hover:underline lowercase font-medium"
+              type="button"
+              @click="selectedTag = null"
+            >
+              Clear
+            </button>
+          </div>
+          <div class="flex flex-wrap gap-1">
+            <button
+              v-for="tag in allTags"
+              :key="tag.name"
+              class="flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[11px] transition duration-150"
+              :class="selectedTag === tag.name 
+                ? 'bg-quiet-primary text-quiet-primaryDeep font-semibold border border-quiet-primary' 
+                : 'bg-ink-surface text-quiet-muted hover:text-quiet-text hover:bg-ink-high border border-transparent'"
+              type="button"
+              @click="selectedTag = selectedTag === tag.name ? null : tag.name"
+            >
+              #{{ tag.name }}
+              <span class="opacity-70 text-[9px] font-normal">({{ tag.count }})</span>
+            </button>
+          </div>
+        </div>
+
         <footer class="flex items-center justify-between border-t border-quiet-outline px-4 py-3">
           <SyncStatus />
           <p class="text-xs text-quiet-muted">{{ notesStore.notes.length }} notes</p>
         </footer>
       </aside>
 
-      <main class="min-w-0 flex-1">
+      <main class="min-w-0 flex-1 h-full overflow-hidden">
         <RouterView />
       </main>
     </div>

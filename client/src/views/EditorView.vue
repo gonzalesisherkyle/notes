@@ -45,7 +45,7 @@ async function deleteCurrentNote() {
     @save="saveNote"
   />
 
-  <main v-else class="grid min-h-screen place-items-center px-6 text-center">
+  <main v-else class="grid h-full place-items-center px-6 text-center">
     <section class="max-w-sm">
       <h1 class="font-editor text-[28px] font-bold leading-9 tracking-normal text-quiet-text">Note unavailable</h1>
       <p class="mt-2 text-sm leading-6 text-quiet-muted">It may have been removed from this device.</p>
