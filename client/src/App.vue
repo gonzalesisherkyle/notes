@@ -2,7 +2,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { LogOut, Menu, Plus, RefreshCw, Search, X } from 'lucide-vue-next';
+import { AlertTriangle, LogOut, Menu, Plus, RefreshCw, Search, X } from 'lucide-vue-next';
 import InstallPrompt from './components/InstallPrompt.vue';
 import NoteCard from './components/NoteCard.vue';
 import OfflineBanner from './components/OfflineBanner.vue';
@@ -19,6 +19,9 @@ const search = ref('');
 const notesBooted = ref(false);
 const mobileSidebarOpen = ref(false);
 const selectedTag = ref(null);
+const showDeleteConfirmModal = ref(false);
+const noteIdToDelete = ref(null);
+const noteTitleToDelete = ref('');
 
 const showShell = computed(() => authStore.isLoggedIn && !route.meta.public);
 const activeNoteId = computed(() => route.params.id);
@@ -100,12 +103,25 @@ function goHome() {
   router.push('/');
 }
 
-async function deleteNote(id) {
-  await notesStore.deleteNote(id);
+function deleteNote(id) {
+  const note = notesStore.notes.find((n) => n.id === id);
+  if (!note) return;
+  noteIdToDelete.value = id;
+  noteTitleToDelete.value = note.title || 'Untitled';
+  showDeleteConfirmModal.value = true;
+}
 
-  if (activeNoteId.value === id) {
+async function confirmDeleteNote() {
+  if (!noteIdToDelete.value) return;
+  await notesStore.deleteNote(noteIdToDelete.value);
+
+  if (activeNoteId.value === noteIdToDelete.value) {
     await router.push('/');
   }
+  
+  showDeleteConfirmModal.value = false;
+  noteIdToDelete.value = null;
+  noteTitleToDelete.value = '';
 }
 
 async function handleOnline() {
@@ -308,5 +324,40 @@ watch(
     </main>
 
     <InstallPrompt />
+
+    <!-- Delete Confirmation Modal (Sidebar) -->
+    <Transition name="fade">
+      <div v-if="showDeleteConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="relative w-full max-w-sm rounded-xl border border-quiet-outline/35 bg-ink-low p-6 shadow-2xl transition-all duration-300">
+          <div class="mb-4 flex items-center gap-3 text-quiet-danger">
+            <div class="grid h-10 w-10 place-items-center rounded-full bg-quiet-danger/10">
+              <AlertTriangle class="h-5 w-5" />
+            </div>
+            <h3 class="text-sm font-bold tracking-wider uppercase">Delete Note</h3>
+          </div>
+
+          <p class="text-xs leading-5 text-quiet-muted">
+            Are you sure you want to delete <strong class="text-quiet-text">"{{ noteTitleToDelete }}"</strong>? This will permanently delete it and cannot be undone.
+          </p>
+
+          <div class="mt-6 flex justify-end gap-3 border-t border-quiet-outline/10 pt-4">
+            <button
+              class="rounded-app px-4 py-2 text-xs font-semibold bg-ink-surface text-quiet-text hover:bg-ink-high border border-quiet-outline/40 transition-colors"
+              type="button"
+              @click="showDeleteConfirmModal = false"
+            >
+              Cancel
+            </button>
+            <button
+              class="rounded-app px-4 py-2 text-xs font-semibold bg-quiet-danger hover:bg-red-700 text-white transition-colors"
+              type="button"
+              @click="confirmDeleteNote"
+            >
+              Delete Note
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
