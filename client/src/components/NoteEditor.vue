@@ -63,6 +63,11 @@ const editorRef = ref(null);
 const hydrated = ref(false);
 const lastSnapshot = ref('');
 
+// Focus and ID state for editor sync guards
+const isTitleFocused = ref(false);
+const isEditorFocused = ref(false);
+const currentNoteId = ref(null);
+
 // Custom features
 const isFocusMode = ref(false);
 const currentAmbientSound = ref('off');
@@ -355,23 +360,50 @@ function normalizeFontSize(size) {
 watch(
   () => props.note,
   async (note) => {
-    hydrated.value = false;
-    title.value = note?.title ?? '';
-    body.value = note?.body ?? '';
-    color.value = note?.color ?? 'default';
-    fontFamily.value = note?.fontFamily ?? 'serif';
-    fontSize.value = normalizeFontSize(note?.fontSize);
-    lineHeight.value = note?.lineHeight ?? 'relaxed';
-    pinned.value = note?.pinned ?? false;
-    tags.value = Array.isArray(note?.tags) ? [...note.tags] : [];
-
-    await nextTick();
-    if (editorRef.value && editorRef.value.innerHTML !== body.value) {
-      editorRef.value.innerHTML = body.value;
-    }
+    const idChanged = note?.id !== currentNoteId.value;
     
-    lastSnapshot.value = snapshot.value;
-    hydrated.value = true;
+    if (idChanged || !hydrated.value) {
+      currentNoteId.value = note?.id ?? null;
+      hydrated.value = false;
+      
+      title.value = note?.title ?? '';
+      body.value = note?.body ?? '';
+      color.value = note?.color ?? 'default';
+      fontFamily.value = note?.fontFamily ?? 'serif';
+      fontSize.value = normalizeFontSize(note?.fontSize);
+      lineHeight.value = note?.lineHeight ?? 'relaxed';
+      pinned.value = note?.pinned ?? false;
+      tags.value = Array.isArray(note?.tags) ? [...note.tags] : [];
+
+      await nextTick();
+      if (editorRef.value && editorRef.value.innerHTML !== body.value) {
+        editorRef.value.innerHTML = body.value;
+      }
+      
+      lastSnapshot.value = snapshot.value;
+      hydrated.value = true;
+    } else {
+      if (note) {
+        // Safe updates: only set title/body if not currently focused
+        if (!isTitleFocused.value && title.value !== note.title) {
+          title.value = note.title ?? '';
+        }
+        if (!isEditorFocused.value && body.value !== note.body) {
+          body.value = note.body ?? '';
+          await nextTick();
+          if (editorRef.value && editorRef.value.innerHTML !== body.value) {
+            editorRef.value.innerHTML = body.value;
+          }
+        }
+        
+        color.value = note.color ?? 'default';
+        fontFamily.value = note.fontFamily ?? 'serif';
+        fontSize.value = normalizeFontSize(note.fontSize);
+        lineHeight.value = note.lineHeight ?? 'relaxed';
+        pinned.value = note.pinned ?? false;
+        tags.value = Array.isArray(note.tags) ? [...note.tags] : [];
+      }
+    }
   },
   { immediate: true },
 );
@@ -1115,8 +1147,8 @@ const inlineStyles = computed(() => {
           :class="isFocusMode ? 'mb-12' : 'mb-6'"
           class="w-full bg-transparent font-editor text-[32px] font-bold leading-10 tracking-tight text-quiet-text outline-none border-b pb-2 transition-colors duration-250 placeholder:text-quiet-muted/30"
           :style="{ borderBottomColor: 'transparent' }"
-          :onfocus="e => e.target.style.borderBottomColor = activeThemeAccentColor + '40'"
-          :onblur="e => e.target.style.borderBottomColor = 'transparent'"
+          @focus="isTitleFocused = true; $event.target.style.borderBottomColor = activeThemeAccentColor + '40'"
+          @blur="isTitleFocused = false; $event.target.style.borderBottomColor = 'transparent'"
           maxlength="160"
           placeholder="Untitled note..."
           type="text"
@@ -1129,6 +1161,8 @@ const inlineStyles = computed(() => {
           class="editor-content w-full min-h-[60vh] outline-none text-quiet-text"
           :style="inlineStyles"
           placeholder="Start writing your masterpiece... (Shorthands: # Space for H1, > Space for Quote, - Space for list, [] Space for checklist)"
+          @focus="isEditorFocused = true"
+          @blur="isEditorFocused = false"
           @click="handleEditorClick"
           @input="handleEditorInput"
           @keydown="handleEditorKeydown"
