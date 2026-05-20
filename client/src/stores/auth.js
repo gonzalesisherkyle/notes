@@ -83,14 +83,16 @@ export const useAuthStore = defineStore('auth', () => {
     offlineOnly.value = true;
   }
 
-  // Silently restores a session. Checks localStorage cache first for instant unlock,
-  // then refreshes the access token in the background via the refresh cookie.
+  // Silently restores a session. Checks localStorage cache first for instant unlock.
+  // If no cache exists, awaits the network /auth/refresh call.
+  // When a cached session is used, the API interceptor will automatically refresh
+  // the access token on the first 401 response from any subsequent API call.
   async function init() {
     if (initialized.value) {
       return;
     }
 
-    // Phase 1: Instant unlock from localStorage cache (no network, no blocking)
+    // Instant unlock from localStorage cache (no network, no blocking)
     const cachedSession = readOfflineSession();
     if (cachedSession) {
       isLoggedIn.value = true;
@@ -98,9 +100,6 @@ export const useAuthStore = defineStore('auth', () => {
       offlineOnly.value = true;
       initialized.value = true;
       initializing.value = false;
-
-      // Phase 2: Refresh token in background (non-blocking)
-      refreshTokenInBackground(cachedSession);
       return;
     }
 
@@ -138,31 +137,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     await initPromise;
-  }
-
-  // Background token refresh — upgrades an offline-cached session to a fully authenticated one
-  async function refreshTokenInBackground(cachedSession) {
-    try {
-      const response = await api.post('/auth/refresh');
-      const token = response.data?.accessToken;
-
-      if (response.data?.offline) {
-        // Already unlocked from cache, keep it
-      } else if (token) {
-        setAccessToken(token);
-        isLoggedIn.value = true;
-        user.value = response.data?.user ?? null;
-        offlineOnly.value = false;
-        rememberOfflineSession(response.data?.user ?? null);
-      } else {
-        // Server explicitly says no valid session — force logout
-        forgetOfflineSession();
-        clearSession();
-        await redirectToLogin();
-      }
-    } catch {
-      // Network error with cached session — stay offline, don't logout
-    }
   }
 
   // Forces a fresh refresh-cookie check after an earlier unauthenticated restore.
