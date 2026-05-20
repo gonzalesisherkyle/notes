@@ -117,13 +117,26 @@ export const useNotesStore = defineStore('notes', () => {
     notes.value = visibleNotes([...byId.values()]);
   }
 
-  // Loads local notes instantly, then merges server notes by latest updatedAt timestamp.
+  // Loads local notes instantly, then merges server notes in the background.
   async function init() {
     loading.value = true;
     syncError.value = null;
 
+    // Phase 1: Show cached notes from IndexedDB immediately
     try {
       await refreshFromDB();
+    } catch (error) {
+      syncError.value = error.message ?? 'Unable to load local notes';
+    } finally {
+      loading.value = false;
+    }
+
+    // Phase 2: Fetch and merge server notes in background (non-blocking)
+    syncServerInBackground();
+  }
+
+  async function syncServerInBackground() {
+    try {
       const response = await api.get('/notes');
 
       if (response.data?.offline) {
@@ -133,9 +146,7 @@ export const useNotesStore = defineStore('notes', () => {
       await mergeServerNotes(response.data?.notes ?? []);
       await syncNow();
     } catch (error) {
-      syncError.value = error.message ?? 'Unable to load notes';
-    } finally {
-      loading.value = false;
+      syncError.value = error.message ?? 'Unable to sync with server';
     }
   }
 

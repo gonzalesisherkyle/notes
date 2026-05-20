@@ -41,7 +41,8 @@ function decodePlainData(encodedData) {
 // Strip HTML tags for clean card description snippet
 function getPlainBody(html) {
   if (!html) return '';
-  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const redacted = html.replace(/<span[^>]*class="[^"]*secret-text[^"]*"[^>]*>.*?<\/span>/gi, '•••');
+  return redacted.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 async function handleDecrypt() {

@@ -30,7 +30,9 @@ watch(viewLayout, (newLayout) => {
 // Helper: Strip HTML tags for card body snippet
 function stripHtml(html) {
   if (!html) return '';
-  return html.replace(/<[^>]*>/g, '').trim();
+  // Redact secret text content before stripping tags
+  const redacted = html.replace(/<span[^>]*class="[^"]*secret-text[^"]*"[^>]*>.*?<\/span>/gi, '•••');
+  return redacted.replace(/<[^>]*>/g, '').trim();
 }
 
 function normalizeText(htmlOrText) {

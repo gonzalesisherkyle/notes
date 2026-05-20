@@ -33,7 +33,8 @@ const canvasRef = ref(null);
 // Plaintext body helper
 function getPlainBody(html) {
   if (!html) return '';
-  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const redacted = html.replace(/<span[^>]*class="[^"]*secret-text[^"]*"[^>]*>.*?<\/span>/gi, '•••');
+  return redacted.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 // Compute the base64 URL-safe payload of the note

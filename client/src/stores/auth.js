@@ -84,9 +84,18 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // Silently restores a session by rotating the refresh cookie into a new access token.
+  // Uses cached offline session for instant UI unlock, then refreshes in background.
   async function init() {
     if (initialized.value) {
       return;
+    }
+
+    // Instant unlock: use cached session from localStorage so the UI renders immediately
+    const cachedSession = readOfflineSession();
+    if (cachedSession) {
+      isLoggedIn.value = true;
+      user.value = cachedSession.user ?? null;
+      offlineOnly.value = true;
     }
 
     if (!initPromise) {
@@ -111,8 +120,11 @@ export const useAuthStore = defineStore('auth', () => {
           }
         })
         .catch(() => {
-          forgetOfflineSession();
-          clearSession();
+          // If we had a cached session, keep the offline unlock active
+          if (!cachedSession) {
+            forgetOfflineSession();
+            clearSession();
+          }
         })
         .finally(() => {
           initialized.value = true;
