@@ -83,21 +83,28 @@ export const useAuthStore = defineStore('auth', () => {
     offlineOnly.value = true;
   }
 
-  // Silently restores a session by rotating the refresh cookie into a new access token.
-  // Uses cached offline session for instant UI unlock, then refreshes in background.
+  // Silently restores a session. Checks localStorage cache first for instant unlock,
+  // then refreshes the access token in the background via the refresh cookie.
   async function init() {
     if (initialized.value) {
       return;
     }
 
-    // Instant unlock: use cached session from localStorage so the UI renders immediately
+    // Phase 1: Instant unlock from localStorage cache (no network, no blocking)
     const cachedSession = readOfflineSession();
     if (cachedSession) {
       isLoggedIn.value = true;
       user.value = cachedSession.user ?? null;
       offlineOnly.value = true;
+      initialized.value = true;
+      initializing.value = false;
+
+      // Phase 2: Refresh token in background (non-blocking)
+      refreshTokenInBackground(cachedSession);
+      return;
     }
 
+    // No cached session — must wait for network to determine auth state
     if (!initPromise) {
       initializing.value = true;
 
@@ -120,11 +127,8 @@ export const useAuthStore = defineStore('auth', () => {
           }
         })
         .catch(() => {
-          // If we had a cached session, keep the offline unlock active
-          if (!cachedSession) {
-            forgetOfflineSession();
-            clearSession();
-          }
+          forgetOfflineSession();
+          clearSession();
         })
         .finally(() => {
           initialized.value = true;
@@ -134,6 +138,31 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     await initPromise;
+  }
+
+  // Background token refresh — upgrades an offline-cached session to a fully authenticated one
+  async function refreshTokenInBackground(cachedSession) {
+    try {
+      const response = await api.post('/auth/refresh');
+      const token = response.data?.accessToken;
+
+      if (response.data?.offline) {
+        // Already unlocked from cache, keep it
+      } else if (token) {
+        setAccessToken(token);
+        isLoggedIn.value = true;
+        user.value = response.data?.user ?? null;
+        offlineOnly.value = false;
+        rememberOfflineSession(response.data?.user ?? null);
+      } else {
+        // Server explicitly says no valid session — force logout
+        forgetOfflineSession();
+        clearSession();
+        await redirectToLogin();
+      }
+    } catch {
+      // Network error with cached session — stay offline, don't logout
+    }
   }
 
   // Forces a fresh refresh-cookie check after an earlier unauthenticated restore.
