@@ -384,6 +384,9 @@ watch(
       hydrated.value = true;
     } else {
       if (note) {
+        // Temporarily set hydrated to false to prevent setting assignments from triggering save loop
+        hydrated.value = false;
+
         // Safe updates: only set title/body if not currently focused
         if (!isTitleFocused.value && title.value !== note.title) {
           title.value = note.title ?? '';
@@ -401,7 +404,15 @@ watch(
         fontSize.value = normalizeFontSize(note.fontSize);
         lineHeight.value = note.lineHeight ?? 'relaxed';
         pinned.value = note.pinned ?? false;
-        tags.value = Array.isArray(note.tags) ? [...note.tags] : [];
+
+        // Only assign tags if they actually changed, to avoid array reference triggers
+        const tagsChanged = JSON.stringify(tags.value) !== JSON.stringify(note.tags);
+        if (tagsChanged) {
+          tags.value = Array.isArray(note.tags) ? [...note.tags] : [];
+        }
+
+        await nextTick();
+        hydrated.value = true;
       }
     }
   },
