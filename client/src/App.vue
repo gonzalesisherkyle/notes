@@ -149,6 +149,7 @@ watch(
       await bootNotes();
     } else {
       notesBooted.value = false;
+      notesStore.reset();
     }
   },
 );
@@ -265,7 +266,7 @@ watch(
           </div>
 
           <label class="relative block group">
-            <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-quiet-muted/50 group-focus-within:text-quiet-primary transition-colors" aria-hidden="true" />
+            <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-quiet-muted group-focus-within:text-quiet-primary transition-colors" aria-hidden="true" />
             <input
               v-model="search"
               class="h-10 w-full rounded-xl border border-quiet-outline/25 bg-ink-surface/50 pl-9 pr-8 text-sm text-quiet-text outline-none transition placeholder:text-quiet-muted/30 focus:border-quiet-primary focus:bg-ink-surface focus:ring-1 focus:ring-quiet-primary/10"

@@ -5,7 +5,7 @@ import api from '../services/api';
 import {
   deleteNote as deleteNoteFromDB,
   getAllNotes,
-  getNoteById,
+  getNoteById as getNoteByIdFromDB,
   getUnsyncedNotes,
   markSynced,
   saveNote as saveNoteToDB,
@@ -25,6 +25,25 @@ function visibleNotes(notes) {
 
 function noteTimestamp(note) {
   return new Date(note.updatedAt ?? 0).getTime();
+}
+
+function normalizeServerNote(serverNote) {
+  return {
+    id: serverNote.id ?? serverNote._id,
+    title: serverNote.title ?? '',
+    body: serverNote.body ?? '',
+    deleted: Boolean(serverNote.deleted),
+    synced: true,
+    color: serverNote.color ?? 'default',
+    fontFamily: serverNote.fontFamily ?? 'serif',
+    fontSize: serverNote.fontSize ?? 'medium',
+    lineHeight: serverNote.lineHeight ?? 'relaxed',
+    pinned: serverNote.pinned ?? false,
+    tags: Array.isArray(serverNote.tags) ? serverNote.tags : [],
+    versions: Array.isArray(serverNote.versions) ? serverNote.versions : [],
+    createdAt: serverNote.createdAt,
+    updatedAt: serverNote.updatedAt,
+  };
 }
 
 function createDraft(partial = {}) {
@@ -69,6 +88,8 @@ export const useNotesStore = defineStore('notes', () => {
   const loading = ref(false);
   const syncing = ref(false);
   const syncError = ref(null);
+  const initialized = ref(false);
+  let initPromise = null;
 
   const hasUnsynced = computed(() => notes.value.some((note) => note.synced === false));
 
@@ -82,21 +103,11 @@ export const useNotesStore = defineStore('notes', () => {
     const byId = new Map(localNotes.map((note) => [note.id, note]));
 
     for (const serverNote of serverNotes) {
-      const incoming = {
-        id: serverNote.id ?? serverNote._id,
-        title: serverNote.title ?? '',
-        body: serverNote.body ?? '',
-        deleted: Boolean(serverNote.deleted),
-        synced: true,
-        color: serverNote.color ?? 'default',
-        fontFamily: serverNote.fontFamily ?? 'serif',
-        fontSize: serverNote.fontSize ?? 'medium',
-        lineHeight: serverNote.lineHeight ?? 'relaxed',
-        pinned: serverNote.pinned ?? false,
-        tags: Array.isArray(serverNote.tags) ? serverNote.tags : [],
-        createdAt: serverNote.createdAt,
-        updatedAt: serverNote.updatedAt,
-      };
+      const incoming = normalizeServerNote(serverNote);
+
+      if (!incoming.id) {
+        continue;
+      }
 
       const local = byId.get(incoming.id);
       const localIsNewer = local && noteTimestamp(local) > noteTimestamp(incoming);
@@ -119,20 +130,38 @@ export const useNotesStore = defineStore('notes', () => {
 
   // Loads local notes instantly, then merges server notes in the background.
   async function init() {
-    loading.value = true;
-    syncError.value = null;
-
-    // Phase 1: Show cached notes from IndexedDB immediately
-    try {
-      await refreshFromDB();
-    } catch (error) {
-      syncError.value = error.message ?? 'Unable to load local notes';
-    } finally {
-      loading.value = false;
+    if (initialized.value) {
+      return;
     }
 
-    // Phase 2: Fetch and merge server notes in background (non-blocking)
-    syncServerInBackground();
+    if (initPromise) {
+      await initPromise;
+      return;
+    }
+
+    initPromise = (async () => {
+      loading.value = true;
+      syncError.value = null;
+
+      // Phase 1: Show cached notes from IndexedDB immediately
+      try {
+        await refreshFromDB();
+      } catch (error) {
+        syncError.value = error.message ?? 'Unable to load local notes';
+      } finally {
+        loading.value = false;
+        initialized.value = true;
+      }
+
+      // Phase 2: Fetch and merge server notes in background (non-blocking)
+      void syncServerInBackground();
+    })();
+
+    try {
+      await initPromise;
+    } finally {
+      initPromise = null;
+    }
   }
 
   async function syncServerInBackground() {
@@ -150,9 +179,81 @@ export const useNotesStore = defineStore('notes', () => {
     }
   }
 
+  async function loadNoteById(id) {
+    if (!id) {
+      return null;
+    }
+
+    if (initPromise) {
+      await initPromise;
+    }
+
+    const cachedNote = notes.value.find((note) => note.id === id);
+
+    if (cachedNote) {
+      return cachedNote;
+    }
+
+    try {
+      const localNote = await getNoteByIdFromDB(id);
+
+      if (localNote && !localNote.deleted) {
+        notes.value = visibleNotes([...notes.value.filter((note) => note.id !== localNote.id), localNote]);
+        return localNote;
+      }
+    } catch (error) {
+      syncError.value = error.message ?? 'Unable to load local note';
+    }
+
+    try {
+      const response = await api.get(`/notes/${encodeURIComponent(id)}`);
+
+      if (response.data?.offline) {
+        return null;
+      }
+
+      const serverNote = response.data?.note;
+
+      if (!serverNote) {
+        return null;
+      }
+
+      const note = normalizeServerNote(serverNote);
+
+      if (!note.id) {
+        return null;
+      }
+
+      if (note.deleted) {
+        await deleteNoteFromDB(note.id);
+        notes.value = notes.value.filter((item) => item.id !== note.id);
+        return null;
+      }
+
+      await saveNoteToDB(note);
+      notes.value = visibleNotes([...notes.value.filter((item) => item.id !== note.id), note]);
+      return note;
+    } catch (error) {
+      if (error.response?.status !== 404) {
+        syncError.value = error.message ?? 'Unable to load note';
+      }
+
+      return null;
+    }
+  }
+
+  function reset() {
+    notes.value = [];
+    loading.value = false;
+    syncing.value = false;
+    syncError.value = null;
+    initialized.value = false;
+    initPromise = null;
+  }
+
   // Creates or updates a note optimistically in IndexedDB before trying server sync.
   async function saveNote(partial) {
-    const existing = partial.id ? await getNoteById(partial.id) : null;
+    const existing = partial.id ? await getNoteByIdFromDB(partial.id) : null;
     let versions = existing && Array.isArray(existing.versions) ? [...existing.versions] : [];
 
     // Snapshottable content: only append snapshot if content has actually changed and is not blank
@@ -201,7 +302,7 @@ export const useNotesStore = defineStore('notes', () => {
 
   // Soft-deletes a note locally and queues the tombstone for sync.
   async function deleteNote(id) {
-    const existing = await getNoteById(id);
+    const existing = await getNoteByIdFromDB(id);
 
     if (!existing) {
       return;
@@ -265,8 +366,11 @@ export const useNotesStore = defineStore('notes', () => {
     loading,
     syncing,
     syncError,
+    initialized,
     hasUnsynced,
     init,
+    loadNoteById,
+    reset,
     saveNote,
     deleteNote,
     syncNow,

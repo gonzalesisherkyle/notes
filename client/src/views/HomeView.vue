@@ -267,7 +267,7 @@ function openNote(id) {
       <section class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-quiet-outline/10 pb-5">
         <!-- Search Input -->
         <div class="relative w-full md:max-w-md group">
-          <Search class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-quiet-muted/50 group-focus-within:text-quiet-primary transition-colors" aria-hidden="true" />
+          <Search class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-quiet-muted group-focus-within:text-quiet-primary transition-colors" aria-hidden="true" />
           <input
             v-model="searchDashboard"
             class="h-10 w-full rounded-xl border border-quiet-outline/25 bg-ink-low/60 backdrop-blur-md pl-10 pr-9 text-sm text-quiet-text outline-none transition duration-200 placeholder:text-quiet-muted/30 focus:border-quiet-primary focus:bg-ink-surface focus:ring-1 focus:ring-quiet-primary/10"

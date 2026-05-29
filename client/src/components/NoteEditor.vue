@@ -73,6 +73,7 @@ const isEditorFocused = ref(false);
 const currentNoteId = ref(null);
 const isTagInputFocused = ref(false);
 const isAddTagHovered = ref(false);
+const allSecretsRevealed = ref(false);
 
 // Custom features
 const isFocusMode = ref(false);
@@ -494,8 +495,6 @@ function insertChecklist() {
   updateToolbarStates();
   handleEditorInput();
 }
-
-const allSecretsRevealed = ref(false);
 
 function toggleSecretText() {
   if (!editorRef.value) return;
