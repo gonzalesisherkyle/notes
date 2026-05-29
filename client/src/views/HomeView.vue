@@ -17,6 +17,7 @@ import {
   CheckSquare
 } from 'lucide-vue-next';
 import { useNotesStore } from '../stores/notes';
+import FieldInput from '../components/FieldInput.vue';
 
 const router = useRouter();
 const notesStore = useNotesStore();
@@ -266,23 +267,28 @@ function openNote(id) {
       <!-- Search, Filters and Layout Selector Controls -->
       <section class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-quiet-outline/10 pb-5">
         <!-- Search Input -->
-        <div class="relative w-full md:max-w-md group">
-          <Search class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-quiet-muted group-focus-within:text-quiet-primary transition-colors" aria-hidden="true" />
-          <input
+        <div class="w-full md:max-w-md">
+          <FieldInput
+            id="search-dashboard"
             v-model="searchDashboard"
-            class="h-10 w-full rounded-xl border border-quiet-outline/25 bg-ink-low/60 backdrop-blur-md pl-10 pr-9 text-sm text-quiet-text outline-none transition duration-200 placeholder:text-quiet-muted/30 focus:border-quiet-primary focus:bg-ink-surface focus:ring-1 focus:ring-quiet-primary/10"
             placeholder="Search notes..."
             type="search"
-          />
-          <button
-            v-if="searchDashboard"
-            type="button"
-            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-quiet-muted/50 hover:text-quiet-text transition-colors p-1"
-            @click="searchDashboard = ''"
-            title="Clear search"
           >
-            <X class="h-4 w-4" />
-          </button>
+            <template #icon>
+              <Search class="h-4 w-4" />
+            </template>
+            <template #right>
+              <button
+                v-if="searchDashboard"
+                type="button"
+                class="text-quiet-muted/50 hover:text-quiet-text transition-colors p-1"
+                @click="searchDashboard = ''"
+                title="Clear search"
+              >
+                <X class="h-4 w-4" />
+              </button>
+            </template>
+          </FieldInput>
         </div>
 
         <!-- Layout Toggles and Tag Reset -->

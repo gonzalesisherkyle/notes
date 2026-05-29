@@ -40,6 +40,7 @@ import {
 } from 'lucide-vue-next';
 import { useDebounceFn } from '@vueuse/core';
 import ShareModal from './ShareModal.vue';
+import FieldInput from './FieldInput.vue';
 
 const props = defineProps({
   note: {
@@ -71,7 +72,6 @@ const lastSnapshot = ref('');
 const isTitleFocused = ref(false);
 const isEditorFocused = ref(false);
 const currentNoteId = ref(null);
-const isTagInputFocused = ref(false);
 const isAddTagHovered = ref(false);
 const allSecretsRevealed = ref(false);
 
@@ -1279,16 +1279,16 @@ const inlineStyles = computed(() => {
         </div>
 
         <!-- Title Input with Custom theme border -->
-        <input
+        <FieldInput
+          id="note-title-editor"
           v-model="title"
-          :class="isFocusMode ? 'mb-12' : 'mb-6'"
-          class="w-full bg-transparent font-editor text-[32px] font-bold leading-10 tracking-tight text-quiet-text outline-none border-b pb-2 transition-colors duration-250 placeholder:text-quiet-muted/30"
-          :style="{ borderBottomColor: 'transparent' }"
-          @focus="isTitleFocused = true; $event.target.style.borderBottomColor = activeThemeAccentColor + '40'"
-          @blur="isTitleFocused = false; $event.target.style.borderBottomColor = 'transparent'"
-          maxlength="160"
+          variant="editorial"
           placeholder="Untitled note..."
-          type="text"
+          :accent-color="activeThemeAccentColor"
+          maxlength="160"
+          :class="isFocusMode ? 'mb-12' : 'mb-6'"
+          @focus="isTitleFocused = true"
+          @blur="isTitleFocused = false"
         />
 
         <!-- Rich Text WYSIWYG Editor Container -->
@@ -1374,28 +1374,26 @@ const inlineStyles = computed(() => {
               </div>
 
               <!-- Custom Tag Input with Theme border -->
-              <div class="relative flex items-center">
-                <input
-                  v-model="tagInput"
-                  class="h-9 w-full rounded-xl border bg-ink-base text-xs text-quiet-text pl-3 pr-16 outline-none transition-all duration-200 placeholder:text-quiet-muted/30"
-                  :style="{ borderColor: isTagInputFocused ? activeThemeAccentColor : 'rgba(66, 72, 67, 0.45)' }"
-                  @focus="isTagInputFocused = true"
-                  @blur="isTagInputFocused = false"
-                  placeholder="Type tag (e.g. Work, Study)"
-                  type="text"
-                  @keydown.enter="addTag"
-                />
-                <button
-                  class="absolute right-1.5 h-6 rounded-lg px-2.5 text-[10px] font-semibold transition-colors duration-200"
-                  :style="{ backgroundColor: isAddTagHovered ? activeThemeAccentColor + '30' : activeThemeAccentColor + '1e', color: activeThemeAccentColor, border: `1px solid ${activeThemeAccentColor}33` }"
-                  @mouseenter="isAddTagHovered = true"
-                  @mouseleave="isAddTagHovered = false"
-                  type="button"
-                  @click="addTag"
-                >
-                  Add
-                </button>
-            </div>
+              <FieldInput
+                id="tag-input-field"
+                v-model="tagInput"
+                placeholder="Type tag (e.g. Work, Study)"
+                :accent-color="activeThemeAccentColor"
+                @keydown.enter="addTag"
+              >
+                <template #right>
+                  <button
+                    class="h-7 rounded-lg px-3 text-[10px] font-semibold transition-colors duration-200"
+                    :style="{ backgroundColor: isAddTagHovered ? activeThemeAccentColor + '30' : activeThemeAccentColor + '1e', color: activeThemeAccentColor, border: `1px solid ${activeThemeAccentColor}33` }"
+                    @mouseenter="isAddTagHovered = true"
+                    @mouseleave="isAddTagHovered = false"
+                    type="button"
+                    @click="addTag"
+                  >
+                    Add
+                  </button>
+                </template>
+              </FieldInput>
           </div>
 
             <!-- Version History Panel -->

@@ -2,8 +2,9 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { AlertTriangle, LogIn, UserPlus, Mail, Lock, Eye, EyeOff, Feather } from 'lucide-vue-next';
+import { AlertTriangle, LogIn, UserPlus, Mail, Lock, Feather } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
+import FieldInput from '../components/FieldInput.vue';
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -13,7 +14,6 @@ const email = ref('');
 const password = ref('');
 const error = ref('');
 const submitting = ref(false);
-const showPassword = ref(false);
 
 const isRegister = computed(() => route.path === '/register');
 
@@ -40,7 +40,7 @@ async function submit() {
     
     <!-- Premium Ambient Background -->
     <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-      <!-- Animated Glowing Orbs (CSS-only smooth drift) -->
+      <!-- Animated Glowing Orbs -->
       <div class="absolute -top-[30%] -left-[20%] h-[70vw] w-[70vw] max-w-[800px] rounded-full bg-quiet-primary/10 blur-[120px] animate-pulse" style="animation-duration: 8s" />
       <div class="absolute -bottom-[30%] -right-[20%] h-[70vw] w-[70vw] max-w-[800px] rounded-full bg-quiet-secondary/8 blur-[120px] animate-pulse" style="animation-duration: 12s" />
       
@@ -67,54 +67,35 @@ async function submit() {
 
       <form class="space-y-5" @submit.prevent="submit">
         <!-- Email Field -->
-        <div class="space-y-1.5">
-          <label for="email" class="block text-[11px] font-semibold uppercase tracking-[0.12em] text-quiet-muted/90">Email Address</label>
-          <div class="relative group">
-            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-quiet-muted/50 group-focus-within:text-quiet-primary transition-colors">
-              <Mail class="h-4 w-4" />
-            </span>
-            <input
-              id="email"
-              v-model="email"
-              autocomplete="email"
-              class="h-11 w-full rounded-xl border border-quiet-outline/25 bg-ink-surface/50 pl-10 pr-4 text-sm text-quiet-text outline-none transition duration-200 focus:border-quiet-primary focus:bg-ink-surface focus:ring-1 focus:ring-quiet-primary/20 placeholder:text-quiet-muted/30"
-              placeholder="name@example.com"
-              required
-              type="email"
-            />
-          </div>
-        </div>
+        <FieldInput
+          id="email"
+          v-model="email"
+          label="Email Address"
+          placeholder="name@example.com"
+          required
+          type="email"
+          autocomplete="email"
+        >
+          <template #icon>
+            <Mail class="h-4 w-4" />
+          </template>
+        </FieldInput>
 
         <!-- Password Field -->
-        <div class="space-y-1.5">
-          <div class="flex items-center justify-between">
-            <label for="password" class="block text-[11px] font-semibold uppercase tracking-[0.12em] text-quiet-muted/90">Password</label>
-          </div>
-          <div class="relative group">
-            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-quiet-muted/50 group-focus-within:text-quiet-primary transition-colors">
-              <Lock class="h-4 w-4" />
-            </span>
-            <input
-              id="password"
-              v-model="password"
-              :type="showPassword ? 'text' : 'password'"
-              autocomplete="current-password"
-              class="h-11 w-full rounded-xl border border-quiet-outline/25 bg-ink-surface/50 pl-10 pr-11 text-sm text-quiet-text outline-none transition duration-200 focus:border-quiet-primary focus:bg-ink-surface focus:ring-1 focus:ring-quiet-primary/20 placeholder:text-quiet-muted/30"
-              placeholder="••••••••"
-              minlength="8"
-              required
-            />
-            <button
-              type="button"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-quiet-muted/50 hover:text-quiet-text transition-colors p-1"
-              @click="showPassword = !showPassword"
-              title="Toggle password visibility"
-            >
-              <Eye v-if="showPassword" class="h-4 w-4" />
-              <EyeOff v-else class="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+        <FieldInput
+          id="password"
+          v-model="password"
+          label="Password"
+          placeholder="••••••••"
+          required
+          type="password"
+          autocomplete="current-password"
+          minlength="8"
+        >
+          <template #icon>
+            <Lock class="h-4 w-4" />
+          </template>
+        </FieldInput>
 
         <!-- Error Banner -->
         <Transition name="fade">

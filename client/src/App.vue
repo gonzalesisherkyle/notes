@@ -9,6 +9,7 @@ import OfflineBanner from './components/OfflineBanner.vue';
 import SyncStatus from './components/SyncStatus.vue';
 import { useAuthStore } from './stores/auth';
 import { useNotesStore } from './stores/notes';
+import FieldInput from './components/FieldInput.vue';
 
 const authStore = useAuthStore();
 const notesStore = useNotesStore();
@@ -265,24 +266,27 @@ watch(
             </div>
           </div>
 
-          <label class="relative block group">
-            <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-quiet-muted group-focus-within:text-quiet-primary transition-colors" aria-hidden="true" />
-            <input
-              v-model="search"
-              class="h-10 w-full rounded-xl border border-quiet-outline/25 bg-ink-surface/50 pl-9 pr-8 text-sm text-quiet-text outline-none transition placeholder:text-quiet-muted/30 focus:border-quiet-primary focus:bg-ink-surface focus:ring-1 focus:ring-quiet-primary/10"
-              placeholder="Search workspace..."
-              type="search"
-            />
-            <button
-              v-if="search"
-              type="button"
-              class="absolute right-2.5 top-1/2 -translate-y-1/2 text-quiet-muted/50 hover:text-quiet-text transition-colors p-1"
-              @click="search = ''"
-              title="Clear search"
-            >
-              <X class="h-3 w-3" />
-            </button>
-          </label>
+          <FieldInput
+            id="search-sidebar"
+            v-model="search"
+            placeholder="Search workspace..."
+            type="search"
+          >
+            <template #icon>
+              <Search class="h-4 w-4" />
+            </template>
+            <template #right>
+              <button
+                v-if="search"
+                type="button"
+                class="text-quiet-muted/50 hover:text-quiet-text transition-colors p-1"
+                @click="search = ''"
+                title="Clear search"
+              >
+                <X class="h-4 w-4" />
+              </button>
+            </template>
+          </FieldInput>
         </header>
 
         <div class="min-h-0 flex-1 overflow-y-auto p-2">

@@ -1,10 +1,11 @@
 <!-- client/src/components/ShareModal.vue -->
 <script setup>
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import { Check, Copy, Download, Eye, EyeOff, Globe, Lock, QrCode, Share2, X } from 'lucide-vue-next';
+import { Check, Copy, Download, Globe, Lock, QrCode, Share2, X, AlertTriangle } from 'lucide-vue-next';
 import QRCode from 'qrcode';
 import { encryptNote } from '../utils/crypto';
 import { compressToBase64Url } from '../utils/compress';
+import FieldInput from './FieldInput.vue';
 
 const props = defineProps({
   note: {
@@ -23,7 +24,6 @@ const activeTab = ref('link'); // 'link' | 'qrcode'
 const qrMode = ref('preview'); // 'preview' (URL import) | 'text' (Raw text content)
 const encryptToggle = ref(false);
 const password = ref('');
-const showPassword = ref(false);
 
 const copied = ref(false);
 const generating = ref(false);
@@ -132,7 +132,7 @@ async function renderQrCode() {
   
   try {
     await QRCode.toCanvas(canvasRef.value, textToEncode, {
-      width: 320,
+      width: 300,
       margin: 3,
       errorCorrectionLevel: 'M',
       color: {
@@ -264,7 +264,8 @@ watch(activeTab, (newTab) => {
                 <Lock class="h-4 w-4" :style="encryptToggle ? { color: accentColor } : { color: '#64748b' }" />
                 <span class="text-xs font-semibold">Password Protection</span>
               </div>
-              <input 
+              <FieldInput 
+                id="encrypt-toggle-link"
                 v-model="encryptToggle" 
                 type="checkbox"
                 class="sr-only peer"
@@ -273,49 +274,42 @@ watch(activeTab, (newTab) => {
             </label>
 
             <!-- Password Input -->
-            <div v-if="encryptToggle" class="mt-3.5 flex gap-2">
-              <div class="relative flex-1">
-                <input
-                  id="pwd-input"
-                  v-model="password"
-                  :type="showPassword ? 'text' : 'password'"
-                  class="h-10 w-full rounded-xl border border-quiet-outline/25 bg-ink-surface px-3.5 pr-9 text-xs text-quiet-text outline-none placeholder:text-quiet-muted/30 focus:border-quiet-primary focus:bg-ink-surface transition duration-200"
-                  placeholder="Enter encryption password..."
-                  :style="password ? {} : { borderColor: 'rgba(239, 68, 68, 0.4)' }"
-                />
-                <button
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-quiet-muted hover:text-quiet-text p-1"
-                  type="button"
-                  @click="showPassword = !showPassword"
-                >
-                  <EyeOff v-if="showPassword" class="h-3.5 w-3.5" />
-                  <Eye v-else class="h-3.5 w-3.5" />
-                </button>
-              </div>
+            <div v-if="encryptToggle" class="mt-3.5">
+              <FieldInput
+                id="pwd-input"
+                v-model="password"
+                placeholder="Enter encryption password..."
+                type="password"
+                :accent-color="accentColor"
+                autocomplete="new-password"
+                :error="!password ? '* Password is required to encrypt the payload.' : ''"
+              >
+                <template #icon>
+                  <Lock class="h-4 w-4" />
+                </template>
+              </FieldInput>
             </div>
-            <p v-if="encryptToggle && !password" class="text-[10px] text-quiet-danger mt-1.5 font-semibold">
-              * Password is required to encrypt the payload.
-            </p>
           </div>
 
           <!-- URL / Action buttons -->
           <div class="flex flex-col gap-2.5 mt-2">
-            <div class="flex items-center gap-2">
-              <input
-                readOnly
-                :value="shareUrl"
-                class="h-10 flex-1 truncate rounded-xl border border-quiet-outline/25 bg-ink-deep/60 px-3.5 text-xs text-quiet-muted outline-none select-all"
-              />
-              <button
-                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-quiet-outline/25 bg-ink-surface text-quiet-muted hover:text-quiet-text hover:border-quiet-primary hover:bg-ink-high active:scale-[0.93] transition duration-150"
-                title="Copy share link"
-                type="button"
-                @click="copyLink"
-              >
-                <Check v-if="copied" class="h-4.5 w-4.5 text-quiet-primary" />
-                <Copy v-else class="h-4.5 w-4.5" />
-              </button>
-            </div>
+            <FieldInput
+              id="share-link-input"
+              :modelValue="shareUrl"
+              readonly
+            >
+              <template #right>
+                <button
+                  class="flex h-7 w-7 items-center justify-center rounded-md border border-quiet-outline/20 bg-ink-surface text-quiet-muted hover:text-quiet-text hover:border-quiet-primary transition duration-150 active:scale-[0.9]"
+                  title="Copy share link"
+                  type="button"
+                  @click="copyLink"
+                >
+                  <Check v-if="copied" class="h-3.5 w-3.5 text-quiet-primary" />
+                  <Copy v-else class="h-3.5 w-3.5" />
+                </button>
+              </template>
+            </FieldInput>
             <span v-if="copied" class="text-[10px] text-quiet-primary font-semibold pl-1 -mt-1 flex items-center gap-1.5">
               <Check class="h-3.5 w-3.5" /> Shared link copied to clipboard!
             </span>
@@ -365,7 +359,8 @@ watch(activeTab, (newTab) => {
                 <Lock class="h-4 w-4" :style="encryptToggle ? { color: accentColor } : { color: '#64748b' }" />
                 <span class="text-xs font-semibold">Password Protection</span>
               </div>
-              <input 
+              <FieldInput 
+                id="encrypt-toggle-qr"
                 v-model="encryptToggle" 
                 type="checkbox"
                 class="sr-only peer"
@@ -374,29 +369,21 @@ watch(activeTab, (newTab) => {
             </label>
 
             <!-- Password Input -->
-            <div v-if="encryptToggle" class="mt-3.5 flex gap-2">
-              <div class="relative flex-1">
-                <input
-                  id="qr-pwd-input"
-                  v-model="password"
-                  :type="showPassword ? 'text' : 'password'"
-                  class="h-10 w-full rounded-xl border border-quiet-outline/25 bg-ink-surface px-3.5 pr-9 text-xs text-quiet-text outline-none placeholder:text-quiet-muted/30 focus:border-quiet-primary focus:bg-ink-surface transition duration-200"
-                  placeholder="Enter encryption password..."
-                  :style="password ? {} : { borderColor: 'rgba(239, 68, 68, 0.4)' }"
-                />
-                <button
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-quiet-muted hover:text-quiet-text p-1"
-                  type="button"
-                  @click="showPassword = !showPassword"
-                >
-                  <EyeOff v-if="showPassword" class="h-3.5 w-3.5" />
-                  <Eye v-else class="h-3.5 w-3.5" />
-                </button>
-              </div>
+            <div v-if="encryptToggle" class="mt-3.5">
+              <FieldInput
+                id="qr-pwd-input"
+                v-model="password"
+                placeholder="Enter encryption password..."
+                type="password"
+                :accent-color="accentColor"
+                autocomplete="new-password"
+                :error="!password ? '* Password is required to encrypt the payload.' : ''"
+              >
+                <template #icon>
+                  <Lock class="h-4 w-4" />
+                </template>
+              </FieldInput>
             </div>
-            <p v-if="encryptToggle && !password" class="text-[10px] text-quiet-danger mt-1.5 font-semibold">
-              * Password is required to encrypt the payload.
-            </p>
           </div>
 
           <!-- QR Code Canvas Display -->

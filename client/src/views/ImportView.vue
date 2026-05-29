@@ -2,10 +2,11 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { ArrowLeft, Check, Download, Eye, EyeOff, Lock, LockOpen, QrCode, Tag, AlertTriangle, Feather } from 'lucide-vue-next';
+import { ArrowLeft, Check, Download, Lock, LockOpen, QrCode, Tag, AlertTriangle, Feather } from 'lucide-vue-next';
 import { useNotesStore } from '../stores/notes';
 import { decryptNote } from '../utils/crypto';
 import { decompressFromBase64Url } from '../utils/compress';
+import FieldInput from '../components/FieldInput.vue';
 
 const router = useRouter();
 const notesStore = useNotesStore();
@@ -15,7 +16,6 @@ const errorMsg = ref('');
 const isEncrypted = ref(false);
 const encryptedData = ref('');
 const password = ref('');
-const showPassword = ref(false);
 const importSuccess = ref(false);
 
 const note = ref({
@@ -174,32 +174,19 @@ onMounted(() => {
         </div>
 
         <form @submit.prevent="handleDecrypt" class="flex flex-col gap-4">
-          <div class="space-y-1.5">
-            <label for="pwd" class="block text-[11px] font-semibold uppercase tracking-[0.12em] text-quiet-muted/90">Decryption Password</label>
-            <div class="relative group">
-              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-quiet-muted/50 group-focus-within:text-quiet-primary transition-colors">
-                <Lock class="h-4 w-4" />
-              </span>
-              <input
-                id="pwd"
-                v-model="password"
-                :type="showPassword ? 'text' : 'password'"
-                class="h-11 w-full rounded-xl border border-quiet-outline/25 bg-ink-surface/50 pl-10 pr-11 text-sm text-quiet-text outline-none transition duration-200 focus:border-quiet-primary focus:bg-ink-surface focus:ring-1 focus:ring-quiet-primary/20 placeholder:text-quiet-muted/30"
-                placeholder="Enter password..."
-                required
-                autoFocus
-              />
-              <button
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-quiet-muted hover:text-quiet-text transition-colors p-1"
-                type="button"
-                @click="showPassword = !showPassword"
-                title="Toggle password view"
-              >
-                <EyeOff v-if="showPassword" class="h-4 w-4" />
-                <Eye v-else class="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+          <FieldInput
+            id="pwd"
+            v-model="password"
+            label="Decryption Password"
+            placeholder="Enter password..."
+            required
+            type="password"
+            autocomplete="current-password"
+          >
+            <template #icon>
+              <Lock class="h-4 w-4" />
+            </template>
+          </FieldInput>
 
           <div v-if="errorMsg" class="flex items-start gap-2.5 rounded-xl border border-quiet-danger/30 bg-quiet-danger/5 px-4 py-3 text-xs text-quiet-danger leading-relaxed">
             <AlertTriangle class="h-4 w-4 shrink-0 mt-0.5" />
