@@ -71,6 +71,8 @@ const lastSnapshot = ref('');
 const isTitleFocused = ref(false);
 const isEditorFocused = ref(false);
 const currentNoteId = ref(null);
+const isTagInputFocused = ref(false);
+const isAddTagHovered = ref(false);
 
 // Custom features
 const isFocusMode = ref(false);
@@ -1376,19 +1378,19 @@ const inlineStyles = computed(() => {
               <div class="relative flex items-center">
                 <input
                   v-model="tagInput"
-                  class="h-9 w-full rounded border bg-ink-base text-xs text-quiet-text pl-3 pr-16 outline-none transition-all duration-250 placeholder:text-quiet-muted/30"
-                  :style="{ borderColor: 'rgba(66, 72, 67, 0.45)' }"
-                  :onfocus="e => e.target.style.borderColor = activeThemeAccentColor"
-                  :onblur="e => e.target.style.borderColor = 'rgba(66, 72, 67, 0.45)'"
+                  class="h-9 w-full rounded-xl border bg-ink-base text-xs text-quiet-text pl-3 pr-16 outline-none transition-all duration-200 placeholder:text-quiet-muted/30"
+                  :style="{ borderColor: isTagInputFocused ? activeThemeAccentColor : 'rgba(66, 72, 67, 0.45)' }"
+                  @focus="isTagInputFocused = true"
+                  @blur="isTagInputFocused = false"
                   placeholder="Type tag (e.g. Work, Study)"
                   type="text"
                   @keydown.enter="addTag"
                 />
                 <button
-                  class="absolute right-1.5 h-6 rounded px-2.5 text-[10px] font-semibold transition-colors duration-200"
-                  :style="{ backgroundColor: activeThemeAccentColor + '1e', color: activeThemeAccentColor, border: `1px solid ${activeThemeAccentColor}33` }"
-                  :onmouseover="e => e.currentTarget.style.backgroundColor = activeThemeAccentColor + '30'"
-                  :onmouseout="e => e.currentTarget.style.backgroundColor = activeThemeAccentColor + '1e'"
+                  class="absolute right-1.5 h-6 rounded-lg px-2.5 text-[10px] font-semibold transition-colors duration-200"
+                  :style="{ backgroundColor: isAddTagHovered ? activeThemeAccentColor + '30' : activeThemeAccentColor + '1e', color: activeThemeAccentColor, border: `1px solid ${activeThemeAccentColor}33` }"
+                  @mouseenter="isAddTagHovered = true"
+                  @mouseleave="isAddTagHovered = false"
                   type="button"
                   @click="addTag"
                 >

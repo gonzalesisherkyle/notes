@@ -77,12 +77,27 @@ const cardClasses = computed(() => {
   const mapping = props.active ? activeColorMap : inactiveColorMap;
   return `${mapping[color] || mapping.default} border`;
 });
+
+function getThemeAccentColor(color) {
+  const accents = {
+    default: '#a9cfb7',
+    lavender: '#d8b4fe',
+    forest: '#34d399',
+    ocean: '#22d3ee',
+    sunset: '#fbbf24',
+    rose: '#fda4af',
+    clay: '#fb923c',
+    cyberpunk: '#facc15',
+  };
+  return accents[color] || accents.default;
+}
 </script>
 
 <template>
   <article
-    class="group grid min-h-[82px] cursor-pointer grid-cols-[1fr_auto] gap-3 rounded-app px-3 py-3 transition-all duration-200 my-1.5"
+    class="group grid min-h-[82px] cursor-pointer grid-cols-[1fr_auto] gap-3 rounded-app px-3 py-3 transition-all duration-200 my-1.5 border-l-4"
     :class="cardClasses"
+    :style="active ? { borderLeftColor: getThemeAccentColor(note.color) } : { borderLeftColor: 'transparent' }"
     @click="emit('open', note.id)"
   >
     <div class="min-w-0 flex flex-col justify-between">

@@ -2,7 +2,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { ArrowLeft, Check, Download, Eye, EyeOff, Lock, LockOpen, QrCode, Tag, AlertTriangle } from 'lucide-vue-next';
+import { ArrowLeft, Check, Download, Eye, EyeOff, Lock, LockOpen, QrCode, Tag, AlertTriangle, Feather } from 'lucide-vue-next';
 import { useNotesStore } from '../stores/notes';
 import { decryptNote } from '../utils/crypto';
 import { decompressFromBase64Url } from '../utils/compress';
@@ -134,64 +134,91 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="min-h-screen bg-ink-deep flex flex-col items-center justify-center p-6 text-quiet-text">
-    <div class="w-full max-w-md rounded-xl border border-quiet-outline/35 bg-ink-low shadow-2xl overflow-hidden flex flex-col">
+  <main class="relative min-h-screen flex items-center justify-center overflow-hidden bg-ink-deep px-4 py-12 select-none">
+    
+    <!-- Premium Ambient Background -->
+    <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      <!-- Animated Glowing Orbs -->
+      <div class="absolute -top-[30%] -left-[20%] h-[70vw] w-[70vw] max-w-[800px] rounded-full bg-quiet-primary/10 blur-[120px] animate-pulse" style="animation-duration: 8s" />
+      <div class="absolute -bottom-[30%] -right-[20%] h-[70vw] w-[70vw] max-w-[800px] rounded-full bg-quiet-secondary/8 blur-[120px] animate-pulse" style="animation-duration: 12s" />
+      
+      <!-- Modern dot grid mesh overlay -->
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,#0d0f0e_80%),linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:32px_32px] opacity-70" />
+    </div>
+
+    <!-- Auth Card -->
+    <section class="relative z-10 w-full max-w-[440px] rounded-2xl border border-quiet-outline/30 bg-ink-low/60 backdrop-blur-xl shadow-2xl shadow-black/90 transition-all duration-300 hover:border-quiet-primary/20 overflow-hidden">
       
       <!-- ================= 1. LOADING STEP ================= -->
-      <div v-if="step === 'loading'" class="p-8 flex flex-col items-center justify-center gap-4 text-center">
-        <div class="h-8 w-8 animate-spin rounded-full border-2 border-quiet-primary border-t-transparent" />
-        <h2 class="text-sm font-semibold uppercase tracking-wider text-quiet-muted">Analyzing note package...</h2>
+      <div v-if="step === 'loading'" class="p-8 flex flex-col items-center justify-center gap-5 text-center min-h-[250px]">
+        <svg class="animate-spin h-8 w-8 text-quiet-primary" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <div>
+          <h2 class="text-sm font-semibold uppercase tracking-widest text-quiet-primary">Analyzing Note Package</h2>
+          <p class="text-xs text-quiet-muted/70 mt-1">Please wait while we extract note details...</p>
+        </div>
       </div>
 
       <!-- ================= 2. DECRYPT STEP ================= -->
-      <div v-else-if="step === 'decrypt'" class="p-6 flex flex-col gap-5">
+      <div v-else-if="step === 'decrypt'" class="p-8 flex flex-col gap-6">
         <div class="flex flex-col items-center text-center gap-2">
-          <div class="h-12 w-12 rounded-full bg-quiet-danger/10 flex items-center justify-center text-quiet-danger">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-quiet-danger/10 text-quiet-danger shadow-inner mb-2">
             <Lock class="h-6 w-6" />
           </div>
-          <h2 class="text-base font-bold text-quiet-text">Password Protected Note</h2>
-          <p class="text-xs text-quiet-muted leading-relaxed">
+          <h2 class="font-outfit text-xl font-bold text-quiet-text">Secure Note Transfer</h2>
+          <p class="text-xs text-quiet-muted/80 leading-relaxed max-w-xs font-light">
             This note was encrypted client-side. Please enter the password provided by the sender to decrypt it.
           </p>
         </div>
 
         <form @submit.prevent="handleDecrypt" class="flex flex-col gap-4">
-          <div class="relative">
-            <input
-              v-model="password"
-              :type="showPassword ? 'text' : 'password'"
-              class="h-10 w-full rounded border border-quiet-outline/35 bg-ink-surface px-3 pr-10 text-sm text-quiet-text outline-none placeholder:text-quiet-muted/50 focus:border-quiet-primary"
-              placeholder="Enter password..."
-              required
-              autoFocus
-            />
-            <button
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-quiet-muted hover:text-quiet-text"
-              type="button"
-              @click="showPassword = !showPassword"
-            >
-              <EyeOff v-if="showPassword" class="h-4 w-4" />
-              <Eye v-else class="h-4 w-4" />
-            </button>
+          <div class="space-y-1.5">
+            <label for="pwd" class="block text-[11px] font-semibold uppercase tracking-[0.12em] text-quiet-muted/90">Decryption Password</label>
+            <div class="relative group">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-quiet-muted/50 group-focus-within:text-quiet-primary transition-colors">
+                <Lock class="h-4 w-4" />
+              </span>
+              <input
+                id="pwd"
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                class="h-11 w-full rounded-xl border border-quiet-outline/25 bg-ink-surface/50 pl-10 pr-11 text-sm text-quiet-text outline-none transition duration-200 focus:border-quiet-primary focus:bg-ink-surface focus:ring-1 focus:ring-quiet-primary/20 placeholder:text-quiet-muted/30"
+                placeholder="Enter password..."
+                required
+                autoFocus
+              />
+              <button
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-quiet-muted hover:text-quiet-text transition-colors p-1"
+                type="button"
+                @click="showPassword = !showPassword"
+                title="Toggle password view"
+              >
+                <EyeOff v-if="showPassword" class="h-4 w-4" />
+                <Eye v-else class="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
-          <p v-if="errorMsg" class="text-xs text-quiet-danger font-medium leading-relaxed">
-            ⚠️ {{ errorMsg }}
-          </p>
+          <div v-if="errorMsg" class="flex items-start gap-2.5 rounded-xl border border-quiet-danger/30 bg-quiet-danger/5 px-4 py-3 text-xs text-quiet-danger leading-relaxed">
+            <AlertTriangle class="h-4 w-4 shrink-0 mt-0.5" />
+            <span>{{ errorMsg }}</span>
+          </div>
 
-          <div class="grid grid-cols-2 gap-3 mt-2">
+          <div class="grid grid-cols-2 gap-3.5 mt-3">
             <button
-              class="h-10 rounded border border-quiet-outline/30 bg-ink-surface text-xs font-semibold text-quiet-muted hover:text-quiet-text hover:border-quiet-primary transition"
+              class="h-11 rounded-xl border border-quiet-outline/30 bg-ink-surface/50 text-xs font-semibold text-quiet-text hover:bg-ink-high hover:border-quiet-primary/40 transition duration-150 active:scale-[0.97]"
               type="button"
               @click="cancelImport"
             >
               Cancel
             </button>
             <button
-              class="h-10 rounded bg-quiet-primary text-xs font-semibold text-quiet-primaryDeep hover:bg-[#c5ecd2] transition flex items-center justify-center gap-1.5"
+              class="h-11 rounded-xl bg-quiet-primary text-xs font-semibold text-quiet-primaryDeep hover:bg-[#c5ecd2] transition duration-150 active:scale-[0.97] flex items-center justify-center gap-1.5 shadow-lg shadow-quiet-primaryDeep/5"
               type="submit"
             >
-              <LockOpen class="h-3.5 w-3.5" /> Decrypt Note
+              <LockOpen class="h-4 w-4" /> Decrypt Note
             </button>
           </div>
         </form>
@@ -200,12 +227,17 @@ onMounted(() => {
       <!-- ================= 3. PREVIEW & IMPORT STEP ================= -->
       <div v-else-if="step === 'preview'" class="flex flex-col h-full">
         <!-- Header -->
-        <header class="border-b border-quiet-outline/20 px-6 py-4 flex items-center justify-between bg-ink-deep/20">
-          <div class="flex items-center gap-2">
-            <QrCode class="h-4 w-4 text-quiet-primary" />
-            <h2 class="text-sm font-bold tracking-wider uppercase">Sync Preview</h2>
+        <header class="border-b border-quiet-outline/15 px-6 py-5 flex items-center justify-between bg-ink-deep/20">
+          <div class="flex items-center gap-2.5">
+            <div class="h-8 w-8 rounded-lg bg-quiet-primary/10 flex items-center justify-center text-quiet-primary">
+              <QrCode class="h-4.5 w-4.5" />
+            </div>
+            <div>
+              <h2 class="text-xs font-bold tracking-widest uppercase text-quiet-muted/80">Sync Import</h2>
+              <h1 class="text-sm font-semibold text-quiet-text mt-0.5">Note Preview</h1>
+            </div>
           </div>
-          <span class="text-[10px] bg-quiet-primary/10 border border-quiet-primary/20 text-quiet-primary px-2 py-0.5 rounded-full font-semibold">
+          <span class="text-[10px] bg-quiet-primary/10 border border-quiet-primary/20 text-quiet-primary px-2.5 py-0.5 rounded-full font-semibold">
             Ready to import
           </span>
         </header>
@@ -213,25 +245,25 @@ onMounted(() => {
         <!-- Preview Body -->
         <div class="p-6 flex-1 overflow-y-auto max-h-[50vh] flex flex-col gap-4">
           <div>
-            <span class="text-[10px] uppercase font-bold tracking-wider text-quiet-muted">Title</span>
-            <h3 class="text-lg font-bold text-quiet-text mt-0.5">{{ note.title || 'Untitled Note' }}</h3>
+            <span class="text-[10px] uppercase font-bold tracking-wider text-quiet-muted/60">Title</span>
+            <h3 class="text-lg font-bold text-quiet-text mt-0.5 font-outfit">{{ note.title || 'Untitled Note' }}</h3>
           </div>
 
           <!-- Tags -->
           <div v-if="note.tags && note.tags.length">
-            <span class="text-[10px] uppercase font-bold tracking-wider text-quiet-muted block mb-1">Tags</span>
+            <span class="text-[10px] uppercase font-bold tracking-wider text-quiet-muted/60 block mb-1.5">Tags</span>
             <div class="flex flex-wrap gap-1.5">
-              <span v-for="tag in note.tags" :key="tag" class="flex items-center gap-1 bg-ink-surface text-quiet-muted rounded px-2 py-0.5 text-xs">
-                <Tag class="h-3 w-3" /> #{{ tag }}
+              <span v-for="tag in note.tags" :key="tag" class="flex items-center gap-1.5 bg-ink-surface/50 border border-quiet-outline/10 text-quiet-muted rounded-lg px-2.5 py-1 text-xs">
+                <Tag class="h-3.5 w-3.5 opacity-60" /> #{{ tag }}
               </span>
             </div>
           </div>
 
           <!-- Body Preview -->
-          <div class="border border-quiet-outline/10 bg-ink-surface/10 rounded-lg p-4 mt-2">
-            <span class="text-[10px] uppercase font-bold tracking-wider text-quiet-muted block mb-1">Content Preview</span>
+          <div class="border border-quiet-outline/15 bg-ink-surface/20 rounded-xl p-4 mt-2">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-quiet-muted/60 block mb-2">Content Preview</span>
             <div 
-              class="text-sm leading-relaxed text-quiet-muted/90 max-h-40 overflow-y-auto pr-1 line-clamp-6 whitespace-pre-wrap font-light"
+              class="text-xs leading-relaxed text-quiet-muted/80 max-h-40 overflow-y-auto pr-1 line-clamp-6 whitespace-pre-wrap font-light"
             >
               {{ getPlainBody(note.body) || 'No body text content.' }}
             </div>
@@ -244,36 +276,38 @@ onMounted(() => {
         </div>
 
         <!-- Action Buttons -->
-        <footer v-else class="border-t border-quiet-outline/20 px-6 py-4 grid grid-cols-2 gap-3 bg-ink-deep/20">
+        <footer v-else class="border-t border-quiet-outline/15 px-6 py-4 grid grid-cols-2 gap-3.5 bg-ink-deep/20">
           <button
-            class="h-10 rounded border border-quiet-outline/30 bg-ink-surface text-xs font-semibold text-quiet-muted hover:text-quiet-text hover:border-quiet-primary transition"
+            class="h-11 rounded-xl border border-quiet-outline/30 bg-ink-surface/50 text-xs font-semibold text-quiet-text hover:bg-ink-high hover:border-quiet-primary/40 transition duration-150 active:scale-[0.97]"
             type="button"
             @click="cancelImport"
           >
             Cancel
           </button>
           <button
-            class="h-10 rounded bg-quiet-primary text-xs font-semibold text-quiet-primaryDeep hover:bg-[#c5ecd2] transition flex items-center justify-center gap-1.5"
+            class="h-11 rounded-xl bg-quiet-primary text-xs font-semibold text-quiet-primaryDeep hover:bg-[#c5ecd2] transition duration-150 active:scale-[0.97] flex items-center justify-center gap-1.5 shadow-lg shadow-quiet-primaryDeep/5"
             type="button"
             @click="importNote"
           >
-            <Download class="h-3.5 w-3.5" /> Import Note
+            <Download class="h-4 w-4" /> Import Note
           </button>
         </footer>
       </div>
 
       <!-- ================= 4. ERROR STEP ================= -->
-      <div v-else-if="step === 'error'" class="p-6 flex flex-col gap-5 items-center text-center">
-        <div class="h-12 w-12 rounded-full bg-quiet-danger/10 flex items-center justify-center text-quiet-danger">
+      <div v-else-if="step === 'error'" class="p-8 flex flex-col gap-6 items-center text-center">
+        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-quiet-danger/10 text-quiet-danger shadow-inner">
           <AlertTriangle class="h-6 w-6" />
         </div>
-        <h2 class="text-base font-bold text-quiet-text">Sync Failed</h2>
-        <p class="text-xs text-quiet-muted leading-relaxed max-w-sm">
-          {{ errorMsg }}
-        </p>
+        <div>
+          <h2 class="font-outfit text-xl font-bold text-quiet-text">Sync Failed</h2>
+          <p class="text-xs text-quiet-muted/80 leading-relaxed max-w-sm font-light mt-1.5">
+            {{ errorMsg }}
+          </p>
+        </div>
 
         <button
-          class="w-full h-10 mt-2 rounded bg-ink-surface border border-quiet-outline/30 text-xs font-semibold text-quiet-muted hover:text-quiet-text hover:border-quiet-primary transition flex items-center justify-center gap-2"
+          class="w-full h-11 rounded-xl bg-ink-surface/50 border border-quiet-outline/35 text-xs font-semibold text-quiet-text hover:bg-ink-high hover:border-quiet-primary/40 transition duration-150 flex items-center justify-center gap-2 active:scale-[0.97]"
           type="button"
           @click="cancelImport"
         >
@@ -281,6 +315,6 @@ onMounted(() => {
         </button>
       </div>
 
-    </div>
+    </section>
   </main>
 </template>

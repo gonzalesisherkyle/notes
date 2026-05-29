@@ -26,6 +26,9 @@ export default {
       fontFamily: {
         ui: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         editor: ['"Source Serif 4"', 'Georgia', 'serif'],
+        outfit: ['Outfit', 'sans-serif'],
+        playfair: ['"Playfair Display"', 'serif'],
+        garamond: ['"EB Garamond"', 'serif'],
       },
       maxWidth: {
         editor: '720px',
