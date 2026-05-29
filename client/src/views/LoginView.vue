@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { AlertTriangle, LogIn, UserPlus, Mail, Lock, Feather } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth';
 import FieldInput from '../components/FieldInput.vue';
+import BaseButton from '../components/BaseButton.vue';
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -106,8 +107,8 @@ async function submit() {
         </Transition>
 
         <!-- Submit Button -->
-        <button
-          class="relative overflow-hidden inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-quiet-primary px-4 text-sm font-semibold text-quiet-primaryDeep transition duration-200 hover:bg-[#c5ecd2] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 shadow-lg shadow-quiet-primaryDeep/5"
+        <BaseButton
+          class="relative overflow-hidden inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-quiet-primary px-4 text-sm font-semibold text-quiet-primaryDeep transition duration-200 hover:bg-[#c5ecd2] disabled:cursor-not-allowed disabled:opacity-60 shadow-lg shadow-quiet-primaryDeep/5"
           :disabled="submitting"
           type="submit"
         >
@@ -122,18 +123,18 @@ async function submit() {
             <LogIn v-else class="h-4 w-4" aria-hidden="true" />
             {{ isRegister ? 'Create Account' : 'Log In' }}
           </span>
-        </button>
+        </BaseButton>
       </form>
 
       <!-- Toggle Mode link -->
       <div class="mt-8 border-t border-quiet-outline/10 pt-5 text-center">
-        <button
+        <BaseButton
           class="text-xs font-semibold text-quiet-secondary transition duration-150 hover:text-quiet-text"
           type="button"
           @click="error = ''; router.push(isRegister ? '/login' : '/register')"
         >
           {{ isRegister ? 'Already have an account? Log in' : "Don't have an account? Sign up" }}
-        </button>
+        </BaseButton>
       </div>
     </section>
   </main>

@@ -6,6 +6,7 @@ import QRCode from 'qrcode';
 import { encryptNote } from '../utils/crypto';
 import { compressToBase64Url } from '../utils/compress';
 import FieldInput from './FieldInput.vue';
+import BaseButton from './BaseButton.vue';
 
 const props = defineProps({
   note: {
@@ -217,18 +218,18 @@ watch(activeTab, (newTab) => {
           </div>
           <h2 class="text-xs font-bold tracking-widest uppercase">Share Note</h2>
         </div>
-        <button 
+        <BaseButton 
           class="rounded-full p-1.5 hover:bg-ink-surface text-quiet-muted hover:text-quiet-text transition duration-150 active:scale-[0.9]"
           type="button"
           @click="emit('close')"
         >
           <X class="h-4.5 w-4.5" />
-        </button>
+        </BaseButton>
       </header>
 
       <!-- Tabs Navigation -->
       <div class="flex border-b border-quiet-outline/10 bg-ink-deep/10 px-6">
-        <button
+        <BaseButton
           class="flex-1 py-3.5 text-xs font-semibold uppercase tracking-widest border-b-2 transition duration-200"
           :class="activeTab === 'link' ? 'text-quiet-text' : 'border-transparent text-quiet-muted hover:text-quiet-text'"
           :style="activeTab === 'link' ? { borderBottomColor: accentColor } : {}"
@@ -236,8 +237,8 @@ watch(activeTab, (newTab) => {
           @click="activeTab = 'link'"
         >
           Share Link
-        </button>
-        <button
+        </BaseButton>
+        <BaseButton
           class="flex-1 py-3.5 text-xs font-semibold uppercase tracking-widest border-b-2 transition duration-200"
           :class="activeTab === 'qrcode' ? 'text-quiet-text' : 'border-transparent text-quiet-muted hover:text-quiet-text'"
           :style="activeTab === 'qrcode' ? { borderBottomColor: accentColor } : {}"
@@ -245,7 +246,7 @@ watch(activeTab, (newTab) => {
           @click="activeTab = 'qrcode'"
         >
           QR Code Sync
-        </button>
+        </BaseButton>
       </div>
 
       <!-- Scrollable Modal Content -->
@@ -299,7 +300,7 @@ watch(activeTab, (newTab) => {
               readonly
             >
               <template #right>
-                <button
+                <BaseButton
                   class="flex h-7 w-7 items-center justify-center rounded-md border border-quiet-outline/20 bg-ink-surface text-quiet-muted hover:text-quiet-text hover:border-quiet-primary transition duration-150 active:scale-[0.9]"
                   title="Copy share link"
                   type="button"
@@ -307,14 +308,14 @@ watch(activeTab, (newTab) => {
                 >
                   <Check v-if="copied" class="h-3.5 w-3.5 text-quiet-primary" />
                   <Copy v-else class="h-3.5 w-3.5" />
-                </button>
+                </BaseButton>
               </template>
             </FieldInput>
             <span v-if="copied" class="text-[10px] text-quiet-primary font-semibold pl-1 -mt-1 flex items-center gap-1.5">
               <Check class="h-3.5 w-3.5" /> Shared link copied to clipboard!
             </span>
 
-            <button
+            <BaseButton
               v-if="isNativeShareSupported"
               class="w-full mt-2 h-11 inline-flex items-center justify-center gap-2 rounded-xl text-xs font-semibold text-quiet-primaryDeep transition duration-150 active:scale-[0.97]"
               :style="{ backgroundColor: accentColor }"
@@ -322,7 +323,7 @@ watch(activeTab, (newTab) => {
               @click="triggerNativeShare"
             >
               <Share2 class="h-4 w-4" /> Send to Other Apps
-            </button>
+            </BaseButton>
           </div>
         </div>
 
@@ -334,22 +335,22 @@ watch(activeTab, (newTab) => {
 
           <!-- QR Mode Toggle (Link vs Text) -->
           <div class="w-full grid grid-cols-2 rounded-xl bg-ink-deep p-0.5 border border-quiet-outline/15 text-xs">
-            <button
+            <BaseButton
               class="py-1.5 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition duration-150 active:scale-[0.97]"
               :class="qrMode === 'preview' ? 'bg-ink-surface text-quiet-text shadow-sm' : 'text-quiet-muted hover:text-quiet-text'"
               type="button"
               @click="qrMode = 'preview'"
             >
               <Globe class="h-3.5 w-3.5" /> Link & Preview
-            </button>
-            <button
+            </BaseButton>
+            <BaseButton
               class="py-1.5 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition duration-150 active:scale-[0.97]"
               :class="qrMode === 'text' ? 'bg-ink-surface text-quiet-text shadow-sm' : 'text-quiet-muted hover:text-quiet-text'"
               type="button"
               @click="qrMode = 'text'"
             >
               <QrCode class="h-3.5 w-3.5" /> Raw Plain Text
-            </button>
+            </BaseButton>
           </div>
 
           <!-- Password Protection Toggle (Only for Link mode) -->
@@ -406,14 +407,14 @@ watch(activeTab, (newTab) => {
           </p>
 
           <!-- Download QR Button -->
-          <button
+          <BaseButton
             v-else
             class="mt-2 inline-flex items-center justify-center gap-2 rounded-xl border border-quiet-outline/25 bg-ink-surface px-4 py-2.5 text-xs font-semibold text-quiet-text hover:text-quiet-text hover:border-quiet-primary hover:bg-ink-high transition duration-150 active:scale-[0.97] w-full"
             type="button"
             @click="downloadQrCode"
           >
             <Download class="h-4 w-4" /> Download QR Code Image
-          </button>
+          </BaseButton>
         </div>
 
       </div>

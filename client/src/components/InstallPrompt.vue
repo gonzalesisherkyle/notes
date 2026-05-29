@@ -2,6 +2,7 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { Download, X } from 'lucide-vue-next';
+import BaseButton from './BaseButton.vue';
 
 const deferredPrompt = ref(null);
 const visible = ref(false);
@@ -53,7 +54,7 @@ onBeforeUnmount(() => {
         <h2 class="text-sm font-semibold">Install Quiet Scribe</h2>
         <p class="mt-1 text-xs leading-5 text-quiet-muted">Open it from your desktop and keep writing offline.</p>
       </div>
-      <button
+      <BaseButton
         class="grid h-8 w-8 place-items-center rounded-app text-quiet-muted transition hover:bg-ink-highest hover:text-quiet-text"
         title="Dismiss"
         type="button"
@@ -61,16 +62,16 @@ onBeforeUnmount(() => {
       >
         <X class="h-4 w-4" aria-hidden="true" />
         <span class="sr-only">Dismiss</span>
-      </button>
+      </BaseButton>
     </div>
 
-    <button
+    <BaseButton
       class="inline-flex h-9 items-center gap-2 rounded-app bg-quiet-primary px-3 text-sm font-semibold text-quiet-primaryDeep transition hover:bg-[#c5ecd2]"
       type="button"
       @click="installApp"
     >
       <Download class="h-4 w-4" aria-hidden="true" />
       Install
-    </button>
+    </BaseButton>
   </aside>
 </template>

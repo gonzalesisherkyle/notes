@@ -2,6 +2,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Pin, Trash2 } from 'lucide-vue-next';
+import BaseButton from './BaseButton.vue';
 
 const props = defineProps({
   note: {
@@ -150,7 +151,7 @@ function getThemeAccentColor(color) {
     </div>
 
     <div class="flex items-center">
-      <button
+      <BaseButton
         class="grid h-8 w-8 place-items-center rounded-app text-quiet-muted opacity-0 transition-opacity hover:bg-black/20 hover:text-quiet-danger group-hover:opacity-100"
         title="Delete note"
         type="button"
@@ -158,7 +159,7 @@ function getThemeAccentColor(color) {
       >
         <Trash2 class="h-4 w-4" aria-hidden="true" />
         <span class="sr-only">Delete note</span>
-      </button>
+      </BaseButton>
     </div>
   </article>
 </template>

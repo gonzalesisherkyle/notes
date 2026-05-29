@@ -41,6 +41,7 @@ import {
 import { useDebounceFn } from '@vueuse/core';
 import ShareModal from './ShareModal.vue';
 import FieldInput from './FieldInput.vue';
+import BaseButton from './BaseButton.vue';
 
 const props = defineProps({
   note: {
@@ -868,7 +869,7 @@ const inlineStyles = computed(() => {
     <header v-if="!isFocusMode" class="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-quiet-outline/35 bg-ink-deep/80 backdrop-blur-md px-5 md:px-8">
       <div class="flex items-center gap-3">
         <!-- Pinned indicator -->
-        <button
+        <BaseButton
           class="grid h-9 w-9 place-items-center rounded-app border transition-all duration-200"
           :style="pinned ? { borderColor: activeThemeAccentColor, color: activeThemeAccentColor, backgroundColor: activeThemeAccentColor + '1a' } : {}"
           :class="!pinned ? 'border-quiet-outline bg-ink-surface text-quiet-muted hover:border-quiet-primary hover:text-quiet-text' : ''"
@@ -878,7 +879,7 @@ const inlineStyles = computed(() => {
         >
           <Pin class="h-4 w-4" :class="{ 'fill-current': pinned }" aria-hidden="true" />
           <span class="sr-only">Pin note</span>
-        </button>
+        </BaseButton>
 
         <span v-if="note" class="text-[10px] uppercase tracking-wider text-quiet-muted border border-quiet-outline/30 px-2 py-1 rounded bg-ink-low/50">
           {{ note.synced ? 'Synced' : 'Offline' }}
@@ -886,7 +887,7 @@ const inlineStyles = computed(() => {
       </div>
 
       <div class="flex items-center gap-2">
-        <button
+        <BaseButton
           v-if="note"
           class="grid h-9 w-9 place-items-center rounded-app border transition-colors duration-250"
           :style="showShareModal ? { borderColor: activeThemeAccentColor, color: activeThemeAccentColor, backgroundColor: activeThemeAccentColor + '10' } : {}"
@@ -897,9 +898,9 @@ const inlineStyles = computed(() => {
         >
           <Share2 class="h-4 w-4" aria-hidden="true" />
           <span class="sr-only">Share Note</span>
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="grid h-9 w-9 place-items-center rounded-app border transition-colors duration-250"
           :style="showSettingsModal ? { borderColor: activeThemeAccentColor, color: activeThemeAccentColor, backgroundColor: activeThemeAccentColor + '10' } : {}"
           :class="!showSettingsModal ? 'border-quiet-outline bg-ink-surface text-quiet-muted hover:border-quiet-primary hover:text-quiet-text' : ''"
@@ -909,9 +910,9 @@ const inlineStyles = computed(() => {
         >
           <Settings class="h-4 w-4" aria-hidden="true" />
           <span class="sr-only">Customize Note</span>
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="grid h-9 w-9 place-items-center rounded-app border border-quiet-outline bg-ink-surface text-quiet-muted transition hover:border-quiet-primary hover:text-quiet-text"
           title="Save now"
           type="button"
@@ -919,9 +920,9 @@ const inlineStyles = computed(() => {
         >
           <Check class="h-4 w-4" aria-hidden="true" />
           <span class="sr-only">Save now</span>
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           v-if="note"
           class="grid h-9 w-9 place-items-center rounded-app border border-quiet-outline bg-ink-surface text-quiet-muted transition hover:border-quiet-danger hover:text-quiet-danger"
           title="Delete note"
@@ -930,7 +931,7 @@ const inlineStyles = computed(() => {
         >
           <Trash2 class="h-4 w-4" aria-hidden="true" />
           <span class="sr-only">Delete note</span>
-        </button>
+        </BaseButton>
       </div>
     </header>
 
@@ -945,7 +946,7 @@ const inlineStyles = computed(() => {
         
         <!-- CUSTOM INPUT: Font Family Custom Dropdown -->
         <div class="relative">
-          <button
+          <BaseButton
             class="flex h-8 items-center justify-between gap-1.5 rounded border bg-ink-surface px-2.5 text-xs text-quiet-text transition-all duration-200"
             :style="{ borderColor: fontFamilyDropdownOpen ? activeThemeAccentColor : 'rgba(66, 72, 67, 0.45)' }"
             type="button"
@@ -953,13 +954,13 @@ const inlineStyles = computed(() => {
           >
             <span>{{ currentFontFamilyLabel }}</span>
             <ChevronDown class="h-3 w-3 opacity-60" />
-          </button>
+          </BaseButton>
           
           <div
             v-if="fontFamilyDropdownOpen"
             class="absolute left-0 mt-1.5 z-30 min-w-[125px] rounded border border-quiet-outline bg-ink-surface p-1 shadow-xl backdrop-blur-md"
           >
-            <button
+            <BaseButton
               v-for="opt in fontFamilyOptions"
               :key="opt.value"
               class="w-full text-left rounded px-2.5 py-1.5 text-xs transition-colors"
@@ -969,13 +970,13 @@ const inlineStyles = computed(() => {
               @click="fontFamily = opt.value; fontFamilyDropdownOpen = false"
             >
               {{ opt.label }}
-            </button>
+            </BaseButton>
           </div>
         </div>
 
         <!-- CUSTOM INPUT: Font Size Custom Dropdown -->
         <div class="relative">
-          <button
+          <BaseButton
             class="flex h-8 items-center justify-between gap-1.5 rounded border bg-ink-surface px-2.5 text-xs text-quiet-text transition-all duration-200"
             :style="{ borderColor: fontSizeDropdownOpen ? activeThemeAccentColor : 'rgba(66, 72, 67, 0.45)' }"
             type="button"
@@ -983,13 +984,13 @@ const inlineStyles = computed(() => {
           >
             <span>{{ currentFontSizeLabel }}</span>
             <ChevronDown class="h-3 w-3 opacity-60" />
-          </button>
+          </BaseButton>
           
           <div
             v-if="fontSizeDropdownOpen"
             class="absolute left-0 mt-1.5 z-30 min-w-[100px] rounded border border-quiet-outline bg-ink-surface p-1 shadow-xl backdrop-blur-md"
           >
-            <button
+            <BaseButton
               v-for="opt in fontSizeOptions"
               :key="opt.value"
               class="w-full text-left rounded px-2.5 py-1.5 text-xs transition-colors"
@@ -999,13 +1000,13 @@ const inlineStyles = computed(() => {
               @click="fontSize = opt.value; fontSizeDropdownOpen = false"
             >
               {{ opt.label }}
-            </button>
+            </BaseButton>
           </div>
         </div>
 
         <!-- CUSTOM INPUT: Line Height Spacing Custom Dropdown -->
         <div class="relative">
-          <button
+          <BaseButton
             class="flex h-8 items-center justify-between gap-1.5 rounded border bg-ink-surface px-2.5 text-xs text-quiet-text transition-all duration-200"
             :style="{ borderColor: lineHeightDropdownOpen ? activeThemeAccentColor : 'rgba(66, 72, 67, 0.45)' }"
             type="button"
@@ -1013,13 +1014,13 @@ const inlineStyles = computed(() => {
           >
             <span>{{ currentLineHeightLabel }}</span>
             <ChevronDown class="h-3 w-3 opacity-60" />
-          </button>
+          </BaseButton>
           
           <div
             v-if="lineHeightDropdownOpen"
             class="absolute left-0 mt-1.5 z-30 min-w-[130px] rounded border border-quiet-outline bg-ink-surface p-1 shadow-xl backdrop-blur-md"
           >
-            <button
+            <BaseButton
               v-for="opt in lineHeightOptions"
               :key="opt.value"
               class="w-full text-left rounded px-2.5 py-1.5 text-xs transition-colors"
@@ -1029,14 +1030,14 @@ const inlineStyles = computed(() => {
               @click="lineHeight = opt.value; lineHeightDropdownOpen = false"
             >
               {{ opt.label }}
-            </button>
+            </BaseButton>
           </div>
         </div>
 
         <div class="h-4 w-[1px] bg-quiet-outline/30 mx-1" />
 
         <!-- Bold option with theme highlight -->
-        <button
+        <BaseButton
           class="h-8 w-8 grid place-items-center rounded hover:bg-ink-surface transition hover:text-quiet-text"
           :style="activeFormats.bold ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Bold (Ctrl+B)"
@@ -1044,9 +1045,9 @@ const inlineStyles = computed(() => {
           @click="execCommand('bold')"
         >
           <Bold class="h-4 w-4" />
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="h-8 w-8 grid place-items-center rounded hover:bg-ink-surface transition hover:text-quiet-text"
           :style="activeFormats.italic ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Italic (Ctrl+I)"
@@ -1054,9 +1055,9 @@ const inlineStyles = computed(() => {
           @click="execCommand('italic')"
         >
           <Italic class="h-4 w-4" />
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="h-8 w-8 grid place-items-center rounded hover:bg-ink-surface transition hover:text-quiet-text"
           :style="activeFormats.underline ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Underline (Ctrl+U)"
@@ -1064,9 +1065,9 @@ const inlineStyles = computed(() => {
           @click="execCommand('underline')"
         >
           <Underline class="h-4 w-4" />
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="h-8 w-8 grid place-items-center rounded hover:bg-ink-surface transition hover:text-quiet-text"
           :style="activeFormats.strikeThrough ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Strikethrough"
@@ -1074,10 +1075,10 @@ const inlineStyles = computed(() => {
           @click="execCommand('strikeThrough')"
         >
           <Strikethrough class="h-4 w-4" />
-        </button>
+        </BaseButton>
 
         <!-- Secret Mark / Toggle Actions -->
-        <button
+        <BaseButton
           class="h-8 w-8 grid place-items-center rounded hover:bg-ink-surface transition hover:text-quiet-text"
           :style="activeFormats.secret ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Mark selection as Secret (Lock)"
@@ -1085,9 +1086,9 @@ const inlineStyles = computed(() => {
           @click="toggleSecretText"
         >
           <Lock class="h-4 w-4" />
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="h-8 w-8 grid place-items-center rounded hover:bg-ink-surface transition hover:text-quiet-text"
           :style="allSecretsRevealed ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Toggle visibility of all secrets"
@@ -1096,11 +1097,11 @@ const inlineStyles = computed(() => {
         >
           <Eye v-if="allSecretsRevealed" class="h-4 w-4" />
           <EyeOff v-else class="h-4 w-4" />
-        </button>
+        </BaseButton>
 
         <div class="h-4 w-[1px] bg-quiet-outline/30 mx-1" />
 
-        <button
+        <BaseButton
           class="h-8 px-2 flex items-center gap-1 rounded hover:bg-ink-surface transition hover:text-quiet-text text-xs"
           :style="activeFormats.h1 ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Heading 1"
@@ -1108,9 +1109,9 @@ const inlineStyles = computed(() => {
           @click="execCommand('formatBlock', 'h1')"
         >
           <Heading1 class="h-4 w-4" /> <span class="hidden sm:inline">H1</span>
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="h-8 px-2 flex items-center gap-1 rounded hover:bg-ink-surface transition hover:text-quiet-text text-xs"
           :style="activeFormats.h2 ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Heading 2"
@@ -1118,9 +1119,9 @@ const inlineStyles = computed(() => {
           @click="execCommand('formatBlock', 'h2')"
         >
           <Heading2 class="h-4 w-4" /> <span class="hidden sm:inline">H2</span>
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="h-8 px-2 flex items-center gap-1 rounded hover:bg-ink-surface transition hover:text-quiet-text text-xs"
           :style="activeFormats.h3 ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Heading 3"
@@ -1128,9 +1129,9 @@ const inlineStyles = computed(() => {
           @click="execCommand('formatBlock', 'h3')"
         >
           <Heading3 class="h-4 w-4" /> <span class="hidden sm:inline">H3</span>
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="h-8 px-2 flex items-center gap-1 rounded hover:bg-ink-surface transition hover:text-quiet-text text-xs"
           :style="activeFormats.blockquote ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Blockquote"
@@ -1138,9 +1139,9 @@ const inlineStyles = computed(() => {
           @click="execCommand('formatBlock', 'blockquote')"
         >
           <Quote class="h-3.5 w-3.5" /> <span class="hidden sm:inline">Quote</span>
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="h-8 px-2 flex items-center gap-1 rounded hover:bg-ink-surface transition hover:text-quiet-text text-xs"
           :style="activeFormats.pre ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Code Block"
@@ -1148,11 +1149,11 @@ const inlineStyles = computed(() => {
           @click="execCommand('formatBlock', 'pre')"
         >
           <Code class="h-4 w-4" /> <span class="hidden sm:inline">Code</span>
-        </button>
+        </BaseButton>
 
         <div class="h-4 w-[1px] bg-quiet-outline/30 mx-1" />
 
-        <button
+        <BaseButton
           class="h-8 w-8 grid place-items-center rounded hover:bg-ink-surface transition hover:text-quiet-text"
           :style="activeFormats.insertUnorderedList ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Bullet List"
@@ -1160,9 +1161,9 @@ const inlineStyles = computed(() => {
           @click="execCommand('insertUnorderedList')"
         >
           <List class="h-4 w-4" />
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="h-8 w-8 grid place-items-center rounded hover:bg-ink-surface transition hover:text-quiet-text"
           :style="activeFormats.insertOrderedList ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Numbered List"
@@ -1170,53 +1171,53 @@ const inlineStyles = computed(() => {
           @click="execCommand('insertOrderedList')"
         >
           <ListOrdered class="h-4 w-4" />
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="h-8 w-8 grid place-items-center rounded hover:bg-ink-surface transition hover:text-quiet-text"
           title="Insert Horizontal Rule"
           type="button"
           @click="execCommand('insertHorizontalRule')"
         >
           <Minus class="h-4 w-4" />
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="h-8 w-8 grid place-items-center rounded hover:bg-ink-surface transition hover:text-quiet-text"
           title="Checklist"
           type="button"
           @click="insertChecklist"
         >
           <ListTodo class="h-4 w-4" />
-        </button>
+        </BaseButton>
 
-        <button
+        <BaseButton
           class="h-8 px-2 flex items-center gap-1 rounded hover:bg-ink-surface transition hover:text-quiet-text text-xs"
           title="Clear Format"
           type="button"
           @click="execCommand('removeFormat')"
         >
           <AlignLeft class="h-4 w-4" /> <span class="hidden md:inline">Clear</span>
-        </button>
+        </BaseButton>
 
         <div class="h-4 w-[1px] bg-quiet-outline/30 mx-1" />
 
         <!-- CUSTOM INPUT: Ambient soundscapes selector -->
         <div class="relative relative-ambient">
-          <button
+          <BaseButton
             class="flex h-8 items-center justify-between gap-1.5 rounded border bg-ink-surface px-2.5 text-xs text-quiet-text border-quiet-outline/40 hover:border-quiet-primary transition-all duration-200"
             type="button"
             @click="toggleAmbientDropdown"
           >
             <Headphones class="h-3.5 w-3.5 shrink-0" :class="currentAmbientSound !== 'off' ? 'animate-pulse' : ''" :style="currentAmbientSound !== 'off' ? { color: activeThemeAccentColor } : {}" />
             <span class="hidden xl:inline text-[10px]">{{ ambientSounds.find(s => s.id === currentAmbientSound)?.name }}</span>
-          </button>
+          </BaseButton>
           
           <div
             v-if="ambientDropdownOpen"
             class="absolute left-0 mt-1 z-20 w-44 rounded-lg border border-quiet-outline/35 bg-ink-surface p-1 shadow-xl"
           >
-            <button
+            <BaseButton
               v-for="snd in ambientSounds"
               :key="snd.id"
               class="w-full text-left rounded px-2.5 py-1.5 text-xs transition-colors text-quiet-muted hover:bg-ink-low hover:text-quiet-text flex items-center justify-between"
@@ -1226,11 +1227,11 @@ const inlineStyles = computed(() => {
             >
               <span>{{ snd.name }}</span>
               <span v-if="currentAmbientSound === snd.id" class="h-1.5 w-1.5 rounded-full" :style="{ backgroundColor: activeThemeAccentColor }" />
-            </button>
+            </BaseButton>
           </div>
         </div>
 
-        <button
+        <BaseButton
           class="h-8 px-2 flex items-center gap-1 rounded hover:bg-ink-surface transition text-xs"
           :style="isFocusMode ? { backgroundColor: activeThemeAccentColor + '15', color: activeThemeAccentColor } : {}"
           title="Focus Mode"
@@ -1240,7 +1241,7 @@ const inlineStyles = computed(() => {
           <Minimize2 v-if="isFocusMode" class="h-3.5 w-3.5" />
           <Maximize2 v-else class="h-3.5 w-3.5" />
           <span class="hidden md:inline">{{ isFocusMode ? 'Exit Focus' : 'Focus' }}</span>
-        </button>
+        </BaseButton>
       </div>
     </section>
 
@@ -1256,7 +1257,7 @@ const inlineStyles = computed(() => {
             Start from a template
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button
+            <BaseButton
               v-for="tpl in templates"
               :key="tpl.id"
               class="text-left rounded-lg border border-quiet-outline/35 bg-ink-low/50 hover:bg-ink-surface/85 p-4 transition-all duration-200 hover:scale-[1.02] hover:border-quiet-primary group"
@@ -1274,7 +1275,7 @@ const inlineStyles = computed(() => {
               <p class="text-[10px] leading-4 text-quiet-muted">
                 {{ tpl.description }}
               </p>
-            </button>
+            </BaseButton>
           </div>
         </div>
 
@@ -1315,12 +1316,12 @@ const inlineStyles = computed(() => {
             <h3 class="text-base font-semibold tracking-normal text-quiet-text flex items-center gap-2">
               <Settings class="h-4 w-4" :style="{ color: activeThemeAccentColor }" /> Note Settings
             </h3>
-            <button
+            <BaseButton
               class="rounded-full p-1.5 text-quiet-muted hover:bg-white/10 hover:text-quiet-text transition-colors"
               @click="showSettingsModal = false"
             >
               <X class="h-4 w-4" />
-            </button>
+            </BaseButton>
           </div>
 
           <div class="space-y-6 text-sm">
@@ -1330,7 +1331,7 @@ const inlineStyles = computed(() => {
                 <Palette class="h-3.5 w-3.5" /> Note Theme Background
               </label>
               <div class="grid grid-cols-4 gap-3">
-                <button
+                <BaseButton
                   v-for="theme in themes"
                   :key="theme.id"
                   :class="[
@@ -1359,14 +1360,14 @@ const inlineStyles = computed(() => {
                   class="inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-xs"
                 >
                   #{{ tag }}
-                  <button
+                  <BaseButton
                     class="hover:text-quiet-danger font-bold text-[10px]"
                     title="Remove tag"
                     type="button"
                     @click="removeTag(tag)"
                   >
                     ×
-                  </button>
+                  </BaseButton>
                 </span>
                 <span v-if="!tags.length" class="text-xs text-quiet-muted/50 italic self-center">
                   No tags added yet
@@ -1382,7 +1383,7 @@ const inlineStyles = computed(() => {
                 @keydown.enter="addTag"
               >
                 <template #right>
-                  <button
+                  <BaseButton
                     class="h-7 rounded-lg px-3 text-[10px] font-semibold transition-colors duration-200"
                     :style="{ backgroundColor: isAddTagHovered ? activeThemeAccentColor + '30' : activeThemeAccentColor + '1e', color: activeThemeAccentColor, border: `1px solid ${activeThemeAccentColor}33` }"
                     @mouseenter="isAddTagHovered = true"
@@ -1391,7 +1392,7 @@ const inlineStyles = computed(() => {
                     @click="addTag"
                   >
                     Add
-                  </button>
+                  </BaseButton>
                 </template>
               </FieldInput>
           </div>
@@ -1416,26 +1417,26 @@ const inlineStyles = computed(() => {
                     <p class="truncate font-medium text-quiet-text">{{ ver.title || 'Untitled' }}</p>
                     <p class="text-[10px] text-quiet-muted">{{ formatDate(ver.updatedAt) }}</p>
                   </div>
-                  <button
+                  <BaseButton
                     class="shrink-0 rounded px-2 py-1 text-[10px] font-semibold transition hover:bg-white/10"
                     :style="{ color: activeThemeAccentColor }"
                     type="button"
                     @click="restoreVersion(ver)"
                   >
                     Restore
-                  </button>
+                  </BaseButton>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="mt-6 flex justify-end border-t border-quiet-outline/20 pt-4">
-            <button
+            <BaseButton
               class="rounded-app px-4 py-2 text-xs font-semibold bg-ink-low text-quiet-text hover:bg-ink-base border border-quiet-outline/40 transition-colors"
               @click="showSettingsModal = false"
             >
               Done
-            </button>
+            </BaseButton>
           </div>
         </div>
       </div>
@@ -1457,20 +1458,20 @@ const inlineStyles = computed(() => {
           </p>
 
           <div class="mt-6 flex justify-end gap-3 border-t border-quiet-outline/10 pt-4">
-            <button
+            <BaseButton
               class="rounded-app px-4 py-2 text-xs font-semibold bg-ink-low text-quiet-text hover:bg-ink-base border border-quiet-outline/40 transition-colors"
               type="button"
               @click="showDeleteConfirmModal = false"
             >
               Cancel
-            </button>
-            <button
+            </BaseButton>
+            <BaseButton
               class="rounded-app px-4 py-2 text-xs font-semibold bg-quiet-danger hover:bg-red-700 text-white transition-colors"
               type="button"
               @click="confirmDelete"
             >
               Delete Note
-            </button>
+            </BaseButton>
           </div>
         </div>
       </div>

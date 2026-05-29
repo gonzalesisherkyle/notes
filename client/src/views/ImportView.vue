@@ -7,6 +7,7 @@ import { useNotesStore } from '../stores/notes';
 import { decryptNote } from '../utils/crypto';
 import { decompressFromBase64Url } from '../utils/compress';
 import FieldInput from '../components/FieldInput.vue';
+import BaseButton from '../components/BaseButton.vue';
 
 const router = useRouter();
 const notesStore = useNotesStore();
@@ -194,19 +195,19 @@ onMounted(() => {
           </div>
 
           <div class="grid grid-cols-2 gap-3.5 mt-3">
-            <button
+            <BaseButton
               class="h-11 rounded-xl border border-quiet-outline/30 bg-ink-surface/50 text-xs font-semibold text-quiet-text hover:bg-ink-high hover:border-quiet-primary/40 transition duration-150 active:scale-[0.97]"
               type="button"
               @click="cancelImport"
             >
               Cancel
-            </button>
-            <button
+            </BaseButton>
+            <BaseButton
               class="h-11 rounded-xl bg-quiet-primary text-xs font-semibold text-quiet-primaryDeep hover:bg-[#c5ecd2] transition duration-150 active:scale-[0.97] flex items-center justify-center gap-1.5 shadow-lg shadow-quiet-primaryDeep/5"
               type="submit"
             >
               <LockOpen class="h-4 w-4" /> Decrypt Note
-            </button>
+            </BaseButton>
           </div>
         </form>
       </div>
@@ -264,20 +265,20 @@ onMounted(() => {
 
         <!-- Action Buttons -->
         <footer v-else class="border-t border-quiet-outline/15 px-6 py-4 grid grid-cols-2 gap-3.5 bg-ink-deep/20">
-          <button
+          <BaseButton
             class="h-11 rounded-xl border border-quiet-outline/30 bg-ink-surface/50 text-xs font-semibold text-quiet-text hover:bg-ink-high hover:border-quiet-primary/40 transition duration-150 active:scale-[0.97]"
             type="button"
             @click="cancelImport"
           >
             Cancel
-          </button>
-          <button
+          </BaseButton>
+          <BaseButton
             class="h-11 rounded-xl bg-quiet-primary text-xs font-semibold text-quiet-primaryDeep hover:bg-[#c5ecd2] transition duration-150 active:scale-[0.97] flex items-center justify-center gap-1.5 shadow-lg shadow-quiet-primaryDeep/5"
             type="button"
             @click="importNote"
           >
             <Download class="h-4 w-4" /> Import Note
-          </button>
+          </BaseButton>
         </footer>
       </div>
 
@@ -293,13 +294,13 @@ onMounted(() => {
           </p>
         </div>
 
-        <button
+        <BaseButton
           class="w-full h-11 rounded-xl bg-ink-surface/50 border border-quiet-outline/35 text-xs font-semibold text-quiet-text hover:bg-ink-high hover:border-quiet-primary/40 transition duration-150 flex items-center justify-center gap-2 active:scale-[0.97]"
           type="button"
           @click="cancelImport"
         >
           <ArrowLeft class="h-4 w-4" /> Back to Dashboard
-        </button>
+        </BaseButton>
       </div>
 
     </section>

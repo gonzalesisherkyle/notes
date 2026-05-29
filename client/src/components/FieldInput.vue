@@ -2,6 +2,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { Eye, EyeOff } from 'lucide-vue-next';
+import BaseButton from './BaseButton.vue';
 
 defineOptions({
   inheritAttrs: false
@@ -171,7 +172,7 @@ function handleKeydown(event) {
       />
       
       <!-- Password toggle button -->
-      <button
+      <BaseButton
         v-if="type === 'password' && variant === 'default'"
         type="button"
         class="absolute right-3.5 top-1/2 -translate-y-1/2 text-quiet-muted/50 hover:text-quiet-text transition-colors p-1"
@@ -180,7 +181,7 @@ function handleKeydown(event) {
       >
         <Eye v-if="showPassword" class="h-4 w-4" />
         <EyeOff v-else class="h-4 w-4" />
-      </button>
+      </BaseButton>
 
       <!-- Right Action Slot -->
       <span 

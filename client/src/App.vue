@@ -10,6 +10,7 @@ import SyncStatus from './components/SyncStatus.vue';
 import { useAuthStore } from './stores/auth';
 import { useNotesStore } from './stores/notes';
 import FieldInput from './components/FieldInput.vue';
+import BaseButton from './components/BaseButton.vue';
 
 const authStore = useAuthStore();
 const notesStore = useNotesStore();
@@ -171,7 +172,7 @@ watch(
 
     <div v-else-if="showShell" class="h-screen overflow-hidden bg-ink-deep flex flex-col md:flex-row">
       <header class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-quiet-outline bg-ink-low px-3 md:hidden">
-        <button
+        <BaseButton
           class="grid h-10 w-10 place-items-center rounded-xl border border-quiet-outline/25 bg-ink-surface text-quiet-muted transition hover:border-quiet-primary hover:text-quiet-text"
           title="Open notes"
           type="button"
@@ -179,17 +180,17 @@ watch(
         >
           <Menu class="h-5 w-5" aria-hidden="true" />
           <span class="sr-only">Open notes</span>
-        </button>
+        </BaseButton>
 
-        <button class="min-w-0 px-2 text-left flex items-center gap-2" type="button" @click="goHome">
+        <BaseButton class="min-w-0 px-2 text-left flex items-center gap-2" type="button" @click="goHome">
           <Feather class="h-4.5 w-4.5 text-quiet-primary" />
           <p class="text-xs font-semibold uppercase tracking-[0.18em] text-quiet-primary">Quiet Scribe</p>
-        </button>
+        </BaseButton>
 
         <SyncStatus />
       </header>
 
-      <button
+      <BaseButton
         v-if="mobileSidebarOpen"
         class="fixed inset-0 z-40 bg-black/60 md:hidden backdrop-blur-sm"
         title="Close notes"
@@ -197,7 +198,7 @@ watch(
         @click="mobileSidebarOpen = false"
       >
         <span class="sr-only">Close notes</span>
-      </button>
+      </BaseButton>
 
       <aside
         class="fixed inset-y-0 left-0 z-50 flex w-[min(320px,calc(100vw-48px))] shrink-0 flex-col border-r border-quiet-outline bg-ink-low transition-transform duration-200 md:static md:z-auto md:h-screen md:w-sidebar md:translate-x-0"
@@ -206,7 +207,7 @@ watch(
         <header class="border-b border-quiet-outline/25 p-4 flex flex-col gap-3.5">
           <!-- Logo & Close Button (mobile only) -->
           <div class="flex items-center justify-between gap-3">
-            <button
+            <BaseButton
               class="min-w-0 text-left flex items-center gap-2.5 group"
               type="button"
               @click="goHome"
@@ -218,9 +219,9 @@ watch(
                 <p class="text-[9px] font-bold uppercase tracking-[0.2em] text-quiet-primary">Quiet Scribe</p>
                 <h1 class="truncate text-xs font-semibold text-quiet-text">Notes Workspace</h1>
               </div>
-            </button>
+            </BaseButton>
 
-            <button
+            <BaseButton
               class="grid h-8 w-8 place-items-center rounded-lg border border-quiet-outline/20 bg-ink-surface text-quiet-muted transition hover:border-quiet-primary hover:text-quiet-text md:hidden active:scale-[0.93]"
               title="Close sidebar"
               type="button"
@@ -228,14 +229,14 @@ watch(
             >
               <X class="h-4 w-4" aria-hidden="true" />
               <span class="sr-only">Close sidebar</span>
-            </button>
+            </BaseButton>
           </div>
 
           <!-- Quick Actions Row -->
           <div class="flex items-center justify-between gap-2 border-t border-b border-quiet-outline/10 py-2 select-none">
             <span class="text-[10px] font-bold uppercase tracking-wider text-quiet-muted/60">Quick Actions</span>
             <div class="flex items-center gap-1.5">
-              <button
+              <BaseButton
                 class="flex h-8 items-center gap-1.5 rounded-lg border border-quiet-outline/20 bg-ink-surface/40 px-2.5 text-xs text-quiet-muted hover:border-quiet-primary hover:text-quiet-text transition duration-150 active:scale-[0.95]"
                 title="New note"
                 type="button"
@@ -243,8 +244,8 @@ watch(
               >
                 <Plus class="h-3.5 w-3.5" aria-hidden="true" />
                 <span>New</span>
-              </button>
-              <button
+              </BaseButton>
+              <BaseButton
                 class="grid h-8 w-8 place-items-center rounded-lg border border-quiet-outline/20 bg-ink-surface/40 text-quiet-muted transition hover:border-quiet-primary hover:text-quiet-text disabled:opacity-60 active:scale-[0.95]"
                 :disabled="notesStore.syncing"
                 title="Sync"
@@ -253,8 +254,8 @@ watch(
               >
                 <RefreshCw class="h-3.5 w-3.5" :class="{ 'animate-spin': notesStore.syncing }" aria-hidden="true" />
                 <span class="sr-only">Sync</span>
-              </button>
-              <button
+              </BaseButton>
+              <BaseButton
                 class="grid h-8 w-8 place-items-center rounded-lg border border-quiet-outline/20 bg-ink-surface/40 text-quiet-muted transition hover:border-quiet-danger hover:text-quiet-danger active:scale-[0.95]"
                 title="Log out"
                 type="button"
@@ -262,7 +263,7 @@ watch(
               >
                 <LogOut class="h-3.5 w-3.5" aria-hidden="true" />
                 <span class="sr-only">Log out</span>
-              </button>
+              </BaseButton>
             </div>
           </div>
 
@@ -276,7 +277,7 @@ watch(
               <Search class="h-4 w-4" />
             </template>
             <template #right>
-              <button
+              <BaseButton
                 v-if="search"
                 type="button"
                 class="text-quiet-muted/50 hover:text-quiet-text transition-colors p-1"
@@ -284,7 +285,7 @@ watch(
                 title="Clear search"
               >
                 <X class="h-4 w-4" />
-              </button>
+              </BaseButton>
             </template>
           </FieldInput>
         </header>
@@ -308,17 +309,17 @@ watch(
         <div v-if="allTags.length" class="border-t border-quiet-outline/15 px-4 py-3.5 max-h-[180px] overflow-y-auto select-none bg-ink-deep/10">
           <div class="mb-2.5 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-quiet-muted/70">
             <span class="text-[9px] font-bold tracking-wider opacity-75">Filter Tags</span>
-            <button
+            <BaseButton
               v-if="selectedTag"
               class="text-[9px] text-quiet-primary hover:underline lowercase font-medium"
               type="button"
               @click="selectedTag = null"
             >
               Clear
-            </button>
+            </BaseButton>
           </div>
           <div class="flex flex-wrap gap-1.5">
-            <button
+            <BaseButton
               v-for="tag in allTags"
               :key="tag.name"
               class="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] border transition duration-150 active:scale-[0.96]"
@@ -330,7 +331,7 @@ watch(
             >
               #{{ tag.name }}
               <span class="opacity-60 text-[9px] font-normal">({{ tag.count }})</span>
-            </button>
+            </BaseButton>
           </div>
         </div>
 
@@ -373,20 +374,20 @@ watch(
           </p>
 
           <div class="mt-6 flex justify-end gap-3 border-t border-quiet-outline/10 pt-4">
-            <button
+            <BaseButton
               class="rounded-xl px-4 py-2 text-xs font-semibold bg-ink-surface/50 text-quiet-text hover:bg-ink-high border border-quiet-outline/30 transition duration-150 active:scale-[0.96]"
               type="button"
               @click="showDeleteConfirmModal = false"
             >
               Cancel
-            </button>
-            <button
+            </BaseButton>
+            <BaseButton
               class="rounded-xl px-4 py-2 text-xs font-semibold bg-quiet-danger hover:bg-red-700 text-white transition duration-150 active:scale-[0.96] shadow-lg shadow-quiet-danger/10"
               type="button"
               @click="confirmDeleteNote"
             >
               Delete Note
-            </button>
+            </BaseButton>
           </div>
         </div>
       </div>

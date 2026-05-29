@@ -18,6 +18,7 @@ import {
 } from 'lucide-vue-next';
 import { useNotesStore } from '../stores/notes';
 import FieldInput from '../components/FieldInput.vue';
+import BaseButton from '../components/BaseButton.vue';
 
 const router = useRouter();
 const notesStore = useNotesStore();
@@ -196,15 +197,15 @@ function openNote(id) {
 
         <!-- Quick Action Buttons -->
         <div class="flex items-center gap-3">
-          <button
+          <BaseButton
             class="inline-flex h-10 items-center gap-2 rounded-xl bg-quiet-primary px-4 text-sm font-semibold text-quiet-primaryDeep transition-all duration-200 hover:bg-[#c5ecd2] hover:shadow-lg hover:shadow-quiet-primary/10 active:scale-[0.98]"
             type="button"
             @click="createNote"
           >
             <Plus class="h-4.5 w-4.5" aria-hidden="true" />
             New Note
-          </button>
-          <button
+          </BaseButton>
+          <BaseButton
             class="grid h-10 w-10 place-items-center rounded-xl border border-quiet-outline/35 bg-ink-surface text-quiet-muted transition hover:border-quiet-primary hover:text-quiet-text disabled:opacity-60 active:scale-[0.95]"
             :class="{ 'animate-spin': notesStore.syncing }"
             :disabled="notesStore.syncing"
@@ -213,7 +214,7 @@ function openNote(id) {
             @click="notesStore.syncNow"
           >
             <RefreshCw class="h-4 w-4" />
-          </button>
+          </BaseButton>
         </div>
       </header>
 
@@ -278,7 +279,7 @@ function openNote(id) {
               <Search class="h-4 w-4" />
             </template>
             <template #right>
-              <button
+              <BaseButton
                 v-if="searchDashboard"
                 type="button"
                 class="text-quiet-muted/50 hover:text-quiet-text transition-colors p-1"
@@ -286,14 +287,14 @@ function openNote(id) {
                 title="Clear search"
               >
                 <X class="h-4 w-4" />
-              </button>
+              </BaseButton>
             </template>
           </FieldInput>
         </div>
 
         <!-- Layout Toggles and Tag Reset -->
         <div class="flex items-center gap-3 self-end md:self-auto">
-          <button
+          <BaseButton
             v-if="activeDashboardTag"
             class="text-xs text-quiet-primary border border-quiet-primary/25 rounded-lg px-2.5 py-1 bg-quiet-primaryDeep/15 hover:bg-quiet-primaryDeep/30 transition duration-150 flex items-center gap-1.5"
             type="button"
@@ -301,10 +302,10 @@ function openNote(id) {
           >
             <span>Tag: #{{ activeDashboardTag }}</span>
             <X class="h-3 w-3 opacity-60 hover:opacity-100" />
-          </button>
+          </BaseButton>
 
           <div class="flex rounded-lg border border-quiet-outline/25 bg-ink-low/40 p-1 select-none">
-            <button
+            <BaseButton
               class="grid h-7 w-7 place-items-center rounded-md transition duration-150 active:scale-[0.9]"
               :class="viewLayout === 'grid' ? 'bg-ink-high text-quiet-primary shadow-sm' : 'text-quiet-muted hover:text-quiet-text'"
               title="Grid Layout"
@@ -312,8 +313,8 @@ function openNote(id) {
               @click="viewLayout = 'grid'"
             >
               <Grid class="h-4 w-4" />
-            </button>
-            <button
+            </BaseButton>
+            <BaseButton
               class="grid h-7 w-7 place-items-center rounded-md transition duration-150 active:scale-[0.9]"
               :class="viewLayout === 'list' ? 'bg-ink-high text-quiet-primary shadow-sm' : 'text-quiet-muted hover:text-quiet-text'"
               title="List Layout"
@@ -321,7 +322,7 @@ function openNote(id) {
               @click="viewLayout = 'list'"
             >
               <List class="h-4 w-4" />
-            </button>
+            </BaseButton>
           </div>
         </div>
       </section>
@@ -332,7 +333,7 @@ function openNote(id) {
           <Tag class="h-3 w-3" /> Filter by tag
         </h4>
         <div class="flex flex-wrap gap-2">
-          <button
+          <BaseButton
             v-for="tag in popularTags"
             :key="tag.name"
             class="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs border transition duration-150 active:scale-[0.96]"
@@ -344,7 +345,7 @@ function openNote(id) {
           >
             #{{ tag.name }}
             <span class="opacity-60 text-[10px]" :class="activeDashboardTag === tag.name ? 'text-quiet-primaryDeep font-bold' : ''">({{ tag.count }})</span>
-          </button>
+          </BaseButton>
         </div>
       </section>
 
@@ -357,14 +358,14 @@ function openNote(id) {
         <p class="text-xs text-quiet-muted/70 mt-2 max-w-sm mx-auto leading-relaxed">
           Adjust your search filters, reset selected tags, or create a brand new note to begin writing.
         </p>
-        <button
+        <BaseButton
           class="mt-5 inline-flex h-9 items-center gap-2 rounded-xl bg-quiet-primary px-4 text-xs font-semibold text-quiet-primaryDeep transition hover:bg-[#c5ecd2] active:scale-[0.96]"
           type="button"
           @click="createNote"
         >
           <Plus class="h-4 w-4" />
           Create Note
-        </button>
+        </BaseButton>
       </div>
 
       <!-- Pinned Notes Section -->
