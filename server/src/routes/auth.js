@@ -10,12 +10,25 @@ const router = express.Router();
 const saltRounds = 10;
 const refreshTokenDays = 7;
 
+function cookieSameSite() {
+  const configured = process.env.REFRESH_COOKIE_SAMESITE?.toLowerCase();
+  const allowed = new Set(['strict', 'lax', 'none']);
+
+  if (allowed.has(configured)) {
+    return configured;
+  }
+
+  return process.env.NODE_ENV === 'production' ? 'none' : 'lax';
+}
+
+const refreshCookieSameSite = cookieSameSite();
+
 const COOKIE_OPTS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict',
+  secure: process.env.NODE_ENV === 'production' || refreshCookieSameSite === 'none',
+  sameSite: refreshCookieSameSite,
   maxAge: refreshTokenDays * 24 * 60 * 60 * 1000,
-  path: '/api/auth/refresh',
+  path: '/api/auth',
 };
 
 function createAccessToken(userId) {

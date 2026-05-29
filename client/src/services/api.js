@@ -22,11 +22,17 @@ export function clearAccessToken() {
   accessToken = null;
 }
 
-async function refreshAccessToken() {
+export async function refreshAccessToken() {
   if (!refreshPromise) {
     refreshPromise = api
       .post('/auth/refresh')
       .then((response) => {
+        if (response.data?.offline) {
+          const error = new Error('Offline');
+          error.offline = true;
+          throw error;
+        }
+
         const newToken = response.data?.accessToken;
 
         if (!newToken) {
@@ -79,6 +85,16 @@ api.interceptors.response.use(
         return api(originalConfig);
       } catch (refreshError) {
         clearAccessToken();
+
+        if (refreshError.offline || !refreshError.response) {
+          return {
+            data: {
+              offline: true,
+            },
+            offline: true,
+            status: 0,
+          };
+        }
 
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('auth:logout'));

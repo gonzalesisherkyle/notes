@@ -1,7 +1,7 @@
 // client/src/stores/auth.js
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import api, { clearAccessToken, setAccessToken } from '../services/api';
+import api, { clearAccessToken, refreshAccessToken, setAccessToken } from '../services/api';
 
 let logoutListenerRegistered = false;
 let initPromise = null;
@@ -83,10 +83,34 @@ export const useAuthStore = defineStore('auth', () => {
     offlineOnly.value = true;
   }
 
-  // Silently restores a session. Checks localStorage cache first for instant unlock.
-  // If no cache exists, awaits the network /auth/refresh call.
-  // When a cached session is used, the API interceptor will automatically refresh
-  // the access token on the first 401 response from any subsequent API call.
+  async function restoreFromRefreshCookie({ allowOffline = false, redirectOnUnauthorized = false } = {}) {
+    try {
+      const token = await refreshAccessToken();
+
+      setAccessToken(token);
+      isLoggedIn.value = true;
+      offlineOnly.value = false;
+      rememberOfflineSession(user.value);
+      return true;
+    } catch (error) {
+      if (allowOffline && error.offline) {
+        unlockOfflineSession();
+        return false;
+      }
+
+      forgetOfflineSession();
+      clearSession();
+
+      if (redirectOnUnauthorized) {
+        await redirectToLogin();
+      }
+
+      return false;
+    }
+  }
+
+  // Silently restores a session. A cached session unlocks the app instantly,
+  // then refreshes the in-memory access token in the background.
   async function init() {
     if (initialized.value) {
       return;
@@ -100,6 +124,11 @@ export const useAuthStore = defineStore('auth', () => {
       offlineOnly.value = true;
       initialized.value = true;
       initializing.value = false;
+
+      if (typeof navigator === 'undefined' || navigator.onLine) {
+        void restoreFromRefreshCookie({ allowOffline: true, redirectOnUnauthorized: true });
+      }
+
       return;
     }
 
@@ -107,28 +136,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!initPromise) {
       initializing.value = true;
 
-      initPromise = api
-        .post('/auth/refresh')
-        .then((response) => {
-          const token = response.data?.accessToken;
-
-          if (response.data?.offline) {
-            unlockOfflineSession();
-          } else if (token) {
-            setAccessToken(token);
-            isLoggedIn.value = true;
-            user.value = response.data?.user ?? null;
-            offlineOnly.value = false;
-            rememberOfflineSession(response.data?.user ?? null);
-          } else {
-            forgetOfflineSession();
-            clearSession();
-          }
-        })
-        .catch(() => {
-          forgetOfflineSession();
-          clearSession();
-        })
+      initPromise = restoreFromRefreshCookie()
         .finally(() => {
           initialized.value = true;
           initializing.value = false;
@@ -142,7 +150,14 @@ export const useAuthStore = defineStore('auth', () => {
   // Forces a fresh refresh-cookie check after an earlier unauthenticated restore.
   async function restoreSession() {
     initialized.value = false;
-    await init();
+    initializing.value = true;
+
+    try {
+      await restoreFromRefreshCookie({ allowOffline: true, redirectOnUnauthorized: true });
+    } finally {
+      initialized.value = true;
+      initializing.value = false;
+    }
   }
 
   // Logs in with email and password, storing only the access token in memory.
